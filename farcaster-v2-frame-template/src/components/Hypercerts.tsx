@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useEffect, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import sdk, { type Context } from "@farcaster/frame-sdk";
-import { graphQLClient, GET_HYPERCERTS } from "~/lib/graphqlQueries";
+import { graphQLClient, GET_HYPERCERTS, getHypercerts } from "~/lib/graphqlQueries";
 
 interface HypercertMetadata {
   name: string;
@@ -57,21 +57,24 @@ export default function Hypercerts() {
     const fetchHypercerts = async () => {
       try {
         setLoading(true);
-        console.log("typed response", await graphQLClient.request(GET_HYPERCERTS))
+        console.log("i got here")
+        // const response = await getHypercerts();
         const response = await graphQLClient.request(GET_HYPERCERTS);
+        console.log("response", response)
+        // const response = await graphQLClient.request(GET_HYPERCERTS);
         // Type the response properly to fix the 'unknown' type error
-        const typedResponse = response as { hypercerts: { data: HypercertData[] } };
-        const hypercertData = typedResponse.hypercerts.data;
+        // const typedResponse = response as { hypercerts: { data: HypercertData[] } };
+        // const hypercertData = typedResponse.hypercerts.data;
         
-        const formattedHypercerts = hypercertData.map(cert => ({
-          id: cert.hypercert_id,
-          name: cert.metadata.name,
-          image: cert.metadata.image,
-          description: cert.metadata.description,
-          units: cert.units
-        }));
+        // const formattedHypercerts = hypercertData.map(cert => ({
+        //   id: cert.hypercert_id,
+        //   name: cert.metadata.name,
+        //   image: cert.metadata.image,
+        //   description: cert.metadata.description,
+        //   units: cert.units
+        // }));
         
-        setHypercerts(formattedHypercerts);
+        // setHypercerts(formattedHypercerts);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching hypercerts:", error);
