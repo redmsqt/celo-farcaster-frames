@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { useEffect, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import sdk, { type Context } from "@farcaster/frame-sdk";
-import { graphQLClient, GET_HYPERCERTS, getHypercerts } from "~/lib/graphqlQueries";
+import { getHypercerts } from "~/lib/graphqlQueries";
+
 
 interface HypercertMetadata {
   name: string;
@@ -34,6 +35,11 @@ export default function Hypercerts() {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
   const [context, setContext] = useState<Context.FrameContext>();
   const appUrl = process.env.NEXT_PUBLIC_URL;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [totalCount, setTotalCount] = useState(0);
+  // const { client } = useHypercertClient();
+
 
   useEffect(() => {
     const load = async () => {
@@ -54,38 +60,50 @@ export default function Hypercerts() {
   }, [isSDKLoaded]);
 
   useEffect(() => {
-    const fetchHypercerts = async () => {
-      try {
-        setLoading(true);
-        console.log("i got here")
-        // const response = await getHypercerts();
-        const response = await graphQLClient.request(GET_HYPERCERTS);
-        console.log("response", response)
-        // const response = await graphQLClient.request(GET_HYPERCERTS);
-        // Type the response properly to fix the 'unknown' type error
-        // const typedResponse = response as { hypercerts: { data: HypercertData[] } };
-        // const hypercertData = typedResponse.hypercerts.data;
-        
-        // const formattedHypercerts = hypercertData.map(cert => ({
-        //   id: cert.hypercert_id,
-        //   name: cert.metadata.name,
-        //   image: cert.metadata.image,
-        //   description: cert.metadata.description,
-        //   units: cert.units
-        // }));
-        
-        // setHypercerts(formattedHypercerts);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching hypercerts:", error);
-        setLoading(false);
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchHypercerts(currentPage);
+  }, [currentPage]);
 
-    fetchHypercerts();
-  }, []);
+  const fetchHypercerts = async (page = currentPage) => {
+    try {
+      setLoading(true);
+      const offset = (page - 1) * itemsPerPage;
+      const response = await getHypercerts(itemsPerPage, offset);
+      
+      if (response && response.data && Array.isArray(response.data)) {
+        const formattedHypercerts = response.data.map((cert: { hypercert_id: string; metadata: { name: string; image: string; description: string; }; units: number; }) => ({
+          id: cert.hypercert_id,
+          name: cert.metadata.name,
+          image: cert.metadata.image,
+          description: cert.metadata.description,
+          units: cert.units
+        }));
+        setHypercerts(formattedHypercerts);
+        setTotalCount(response.count);
+      } else {
+        console.error("Invalid response format:", response);
+        setHypercerts([]);
+      }
+      
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching hypercerts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNextPage = () => {
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   if (!isSDKLoaded) {
     return (
@@ -201,7 +219,7 @@ export default function Hypercerts() {
           <div className="space-y-4">
             {hypercerts.map((cert) => (
               <Link href={`/hypercert_details?id=${cert.id}`} key={cert.id} className="group block">
-                <div className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg border border-teal-100">
+                <div className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg border border-teal-100 p-4">
                   <div className="flex">
                     <div className="w-1/3 h-32 overflow-hidden relative">
                       <img
@@ -209,19 +227,19 @@ export default function Hypercerts() {
                         alt={cert.name}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
-                      <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full shadow-sm">
+                      {/* <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full shadow-sm">
                         <span className="text-teal-700 font-medium text-xs">Hypercert</span>
-                      </div>
+                      </div> */}
                     </div>
-                    <div className="w-2/3 p-4">
+                    <div className="w-2/3 p-2">
                       <h2 className="text-lg font-bold text-gray-800 mb-1">{cert.name}</h2>
                       <p className="text-gray-600 text-sm mb-2 line-clamp-2">{cert.description}</p>
                       <div className="flex justify-between items-center">
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
-                          ID: {cert.id}
+                          ID: {cert.id.substring(0, 4)}...{cert.id.substring(cert.id.length - 4)}
                         </span>
                         <button className="px-3 py-1 bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-xs font-medium rounded-lg shadow-sm hover:from-teal-600 hover:to-cyan-700 focus:outline-none focus:ring-1 focus:ring-teal-500 transition-colors duration-200">
-                          View Details
+                          View
                         </button>
                       </div>
                     </div>
@@ -240,6 +258,38 @@ export default function Hypercerts() {
                 <div className="text-xl font-medium text-gray-700 mb-2">No hypercerts available</div>
                 <p className="text-gray-500 text-sm">Check back soon for new impact projects</p>
               </div>
+            </div>
+          )}
+
+          {hypercerts.length > 0 && (
+            <div className="flex justify-between items-center mt-6">
+              <button 
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 rounded-lg shadow-sm transition-all duration-200 ${
+                  currentPage === 1 
+                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-teal-500 to-cyan-600 text-white hover:from-teal-600 hover:to-cyan-700'
+                }`}
+              >
+                Previous
+              </button>
+              
+              <div className="text-gray-700">
+                Page {currentPage} of {Math.ceil(totalCount / itemsPerPage)}
+              </div>
+              
+              <button 
+                onClick={handleNextPage}
+                disabled={currentPage >= Math.ceil(totalCount / itemsPerPage)}
+                className={`px-4 py-2 rounded-lg shadow-sm transition-all duration-200 ${
+                  currentPage >= Math.ceil(totalCount / itemsPerPage)
+                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-teal-500 to-cyan-600 text-white hover:from-teal-600 hover:to-cyan-700'
+                }`}
+              >
+                Next
+              </button>
             </div>
           )}
         </div>
