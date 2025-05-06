@@ -4,12 +4,34 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import sdk, { type Context } from "@farcaster/frame-sdk";
-import { getHypercertById, type Hypercert } from "~/app/api/getHypercerts";
+import { getHypercertById } from "~/lib/graphqlQueries";
+
+interface HypercertData {
+  hypercert_id: string;
+  units: number;
+  metadata: {
+    image: string;
+    name: string;
+    work_scope: string;
+    description: string;
+  };
+  orders?: {
+    totalUnitsForSale: number;
+    data: {
+      pricePerPercentInToken: number;
+      pricePerPercentInUSD: number;
+      chainId: string;
+    }[];
+    cheapestOrder?: {
+      amounts: number[];
+    };
+  };
+}
 
 export default function HypercertDetails() {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
   const [context, setContext] = useState<Context.FrameContext>();
-  const [hypercert, setHypercert] = useState<Hypercert | null>(null);
+  const [hypercert, setHypercert] = useState<HypercertData | null>(null);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
@@ -41,7 +63,11 @@ export default function HypercertDetails() {
 
       try {
         const data = await getHypercertById(id);
-        setHypercert(data);
+        if (data && Array.isArray(data) && data.length > 0) {
+          setHypercert(data[0]);
+        } else {
+          setHypercert(data as unknown as HypercertData);
+        }
       } catch (error) {
         console.error("Error fetching hypercert details:", error);
       } finally {
@@ -77,10 +103,10 @@ export default function HypercertDetails() {
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-teal-100">
           <div className="md:flex">
             <div className="md:w-1/2 relative">
-              {hypercert?.image ? (
+              {hypercert?.metadata?.image ? (
                 <img
-                  src={hypercert.image}
-                  alt={hypercert.name}
+                  src={hypercert.metadata.image}
+                  alt={hypercert.metadata.name}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -95,31 +121,46 @@ export default function HypercertDetails() {
             <div className="md:w-1/2 p-8">
               <div className="mb-6">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2 bg-clip-text text-transparent bg-gradient-to-r from-teal-500 to-cyan-600">
-                  {hypercert?.name || "Hypercert Title"}
+                  {hypercert?.metadata?.name || "Hypercert Title"}
                 </h1>
                 <div className="flex items-center gap-2 mb-4">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-teal-100 text-teal-800">
-                    ID: {hypercert?.id || id || "199292"}
+                    ID: {hypercert?.hypercert_id ? `${hypercert.hypercert_id.substring(0, 4)}...${hypercert.hypercert_id.substring(hypercert.hypercert_id.length - 4)}` : id || "Unknown"}
                   </span>
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-cyan-100 text-cyan-800">
                     Verified
                   </span>
                 </div>
                 <p className="text-gray-600 text-lg">
-                  {hypercert?.description || "This hypercert represents a unique contribution to a public good. Own a fraction to support the creator and their work."}
+                  {hypercert?.metadata?.description || "This hypercert represents a unique contribution to a public good. Own a fraction to support the creator and their work."}
                 </p>
               </div>
+              
+              {hypercert?.metadata?.work_scope && (
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold text-gray-800 mb-2">Work Scope</h2>
+                  <p className="text-gray-600">{hypercert.metadata.work_scope}</p>
+                </div>
+              )}
               
               <div className="border-t border-gray-200 pt-6 mb-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">Purchase Fractions</h2>
                 <div className="bg-teal-50 rounded-2xl p-4 mb-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-gray-700 font-medium">Price per fraction:</div>
-                    <div className="font-bold text-teal-700">0.01 CELO</div>
+                    <div className="font-bold text-teal-700">
+                      {hypercert?.orders?.data && hypercert.orders.data.length > 0
+                        ? `${hypercert.orders.data[0].pricePerPercentInToken} CELO ($${hypercert.orders.data[0].pricePerPercentInUSD})`
+                        : "Not for sale"}
+                    </div>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="text-gray-700 font-medium">Available fractions:</div>
-                    <div className="font-bold text-teal-700">100/1000</div>
+                    <div className="font-bold text-teal-700">
+                      {hypercert?.orders?.totalUnitsForSale 
+                        ? `${hypercert.orders.totalUnitsForSale}/${hypercert.units}` 
+                        : `0/${hypercert?.units || 0}`}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -183,9 +224,14 @@ export default function HypercertDetails() {
                               </button>
                               
                               <button 
-                                className="w-full py-3 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-medium rounded-xl shadow-sm hover:from-teal-600 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200"
+                                className={`w-full py-3 font-medium rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200 ${
+                                  hypercert?.orders?.totalUnitsForSale 
+                                    ? "bg-gradient-to-r from-teal-500 to-cyan-600 text-white hover:from-teal-600 hover:to-cyan-700" 
+                                    : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                                }`}
+                                disabled={!hypercert?.orders?.totalUnitsForSale}
                               >
-                                Buy Fractions
+                                {hypercert?.orders?.totalUnitsForSale ? "Buy Fractions" : "Not Available"}
                               </button>
                             </div>
                           );
