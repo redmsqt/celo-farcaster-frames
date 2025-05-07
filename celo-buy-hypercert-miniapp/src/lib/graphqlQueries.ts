@@ -195,7 +195,7 @@ export async function buyHypercertFraction(
     
     return {
       success: true,
-      transactionHash: receipt.transactionHash,
+      transactionHash: receipt?.transactionHash,
       receipt
     };
   } catch (error) {
