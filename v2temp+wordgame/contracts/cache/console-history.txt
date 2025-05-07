@@ -1,0 +1,3 @@
+console.log(`Contract Balance: ${ethers.formatEther(balance)} CELO`);
+const balance = await ethers.provider.getBalance(contractAddress);
+const contractAddress = "YOUR_CONTRACT_ADDRESS";

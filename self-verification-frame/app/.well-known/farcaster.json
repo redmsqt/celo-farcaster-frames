@@ -1,0 +1,18 @@
+{
+  "frame": {
+    "version": "vNext",
+    "name": "Self Verification Frame",
+    "iconUrl": "https://your-app.com/logo.png",
+    "homeUrl": "https://your-app.com",
+    "imageUrl": "https://your-app.com/frame-preview.png",
+    "buttonTitle": "Verify with Self 🔐",
+    "splashImageUrl": "https://your-app.com/splash.png",
+    "splashBackgroundColor": "#ffffff",
+    "webhookUrl": "https://your-app.com/api/verify"
+  },
+  "accountAssociation": {
+    "header": "Bearer your-farcaster-auth-token",
+    "payload": "your-farcaster-payload",
+    "signature": "your-farcaster-signature"
+  }
+}

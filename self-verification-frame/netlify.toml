@@ -1,0 +1,7 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+  base = "celo-frames/self-verification-frame"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
