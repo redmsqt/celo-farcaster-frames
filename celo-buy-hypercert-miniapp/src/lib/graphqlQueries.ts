@@ -129,80 +129,80 @@ export async function getAllHypercerts() {
   return initialResult;
 }
 
-export async function buyHypercertFraction(
-  order: any,
-  provider: any,
-  signer: any,
-  unitsToBuy: bigint,
-  recipientAddress?: string
-) {
-  try {
-    // Initialize the HypercertExchangeClient
-    const hypercertExchangeClient = new HypercertExchangeClient(ChainId.CELO, provider, signer);
+// export async function buyHypercertFraction(
+//   order: any,
+//   provider: any,
+//   signer: any,
+//   unitsToBuy: bigint,
+//   recipientAddress?: string
+// ) {
+//   try {
+//     // Initialize the HypercertExchangeClient
+//     const hypercertExchangeClient = new HypercertExchangeClient(ChainId.CELO, provider, signer);
     
-    // Get the price per unit from the order
-    const pricePerUnit = BigInt(order.price);
+//     // Get the price per unit from the order
+//     const pricePerUnit = BigInt(order.price);
     
-    // Calculate total price
-    const totalPrice = pricePerUnit * unitsToBuy;
+//     // Calculate total price
+//     const totalPrice = pricePerUnit * unitsToBuy;
     
-    // Get the recipient address (if not provided, the signer's address will be used)
-    const address = recipientAddress || await signer.getAddress();
+//     // Get the recipient address (if not provided, the signer's address will be used)
+//     const address = recipientAddress || await signer.getAddress();
     
-    // Generate the taker order
-    const takerOrder = hypercertExchangeClient.createFractionalSaleTakerBid(
-      order,
-      address,
-      unitsToBuy,
-      pricePerUnit
-    );
+//     // Generate the taker order
+//     const takerOrder = hypercertExchangeClient.createFractionalSaleTakerBid(
+//       order,
+//       address,
+//       unitsToBuy,
+//       pricePerUnit
+//     );
     
-    // Check and set ERC20 approval if needed
-    const currentAllowance = await hypercertExchangeClient.getErc20Allowance(order.currency);
+//     // Check and set ERC20 approval if needed
+//     const currentAllowance = await hypercertExchangeClient.getErc20Allowance(order.currency);
     
-    if (currentAllowance < totalPrice) {
-      const approveTx = await hypercertExchangeClient.approveErc20(
-        order.currency,
-        totalPrice
-      );
-      await approveTx.wait();
-    }
+//     if (currentAllowance < totalPrice) {
+//       const approveTx = await hypercertExchangeClient.approveErc20(
+//         order.currency,
+//         totalPrice
+//       );
+//       await approveTx.wait();
+//     }
     
-    // Check and grant transfer manager approval if needed
-    const isTransferManagerApproved = await hypercertExchangeClient.isTransferManagerApproved();
-    if (!isTransferManagerApproved) {
-      const transferManagerApprove = await hypercertExchangeClient
-        .grantTransferManagerApproval()
-        .call();
-      await transferManagerApprove.wait();
-    }
+//     // Check and grant transfer manager approval if needed
+//     const isTransferManagerApproved = await hypercertExchangeClient.isTransferManagerApproved();
+//     if (!isTransferManagerApproved) {
+//       const transferManagerApprove = await hypercertExchangeClient
+//         .grantTransferManagerApproval()
+//         .call();
+//       await transferManagerApprove.wait();
+//     }
     
-    // Set the value if the currency is the native token (CELO)
-    const zeroAddress = "0x0000000000000000000000000000000000000000";
-    const overrides = order.currency === zeroAddress ? { value: totalPrice } : undefined;
+//     // Set the value if the currency is the native token (CELO)
+//     const zeroAddress = "0x0000000000000000000000000000000000000000";
+//     const overrides = order.currency === zeroAddress ? { value: totalPrice } : undefined;
     
-    // Execute the order
-    const tx = await hypercertExchangeClient.executeOrder(
-      order,
-      takerOrder,
-      order.signature,
-      undefined,
-      overrides
-    ).call();
+//     // Execute the order
+//     const tx = await hypercertExchangeClient.executeOrder(
+//       order,
+//       takerOrder,
+//       order.signature,
+//       undefined,
+//       overrides
+//     ).call();
     
-    // Wait for transaction to complete
-    const receipt = await tx.wait();
+//     // Wait for transaction to complete
+//     const receipt = await tx.wait();
     
-    return {
-      success: true,
-      transactionHash: receipt?.transactionHash,
-      receipt
-    };
-  } catch (error) {
-    console.error("Error buying hypercert fraction:", error);
-    return {
-      success: false,
-      error
-    };
-  }
-}
+//     return {
+//       success: true,
+//       transactionHash: receipt?.transactionHash,
+//       receipt
+//     };
+//   } catch (error) {
+//     console.error("Error buying hypercert fraction:", error);
+//     return {
+//       success: false,
+//       error
+//     };
+//   }
+// }
