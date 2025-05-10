@@ -5,8 +5,8 @@ import "~/app/globals.css";
 import { Providers } from "~/app/providers";
 
 export const metadata: Metadata = {
-  title: "Tip Me",
-  description: "Tip Me Frame",
+  title: "Buy Hypercert",
+  description: "Buy Hypercert Frame",
 };
 
 export default async function RootLayout({

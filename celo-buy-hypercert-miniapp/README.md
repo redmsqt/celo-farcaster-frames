@@ -1,70 +1,74 @@
-# A Farcaster Celo Tip Me Frame v2 Template.
+# Celo Buy Hypercert Mini App
 
-## Getting Started
+A Farcaster Frame that allows users to purchase Hypercerts on the Celo blockchain directly from their Farcaster client.
 
-This is a [NextJS](https://nextjs.org/) + TypeScript + React app Template
+## Overview
 
-To install dependencies:
+This mini app enables users to:
+- Browse available Hypercerts on the Celo blockchain
+- View detailed information about each Hypercert
+- Purchase fractions of Hypercerts using CELO tokens
+- Complete transactions directly within the Farcaster Frame
+
+## Technologies Used
+
+- [Next.js](https://nextjs.org/) - React framework for the frontend
+- [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
+- [Farcaster Frame SDK](https://docs.farcaster.xyz/reference/frames/sdk) - For Frame integration
+- [Hypercerts SDK](https://docs.hypercerts.org/) - For interacting with Hypercerts
+- [ethers.js](https://docs.ethers.org/) - Ethereum library for blockchain interactions
+- [RainbowKit](https://www.rainbowkit.com/) - Wallet connection UI components
+- [Wagmi](https://wagmi.sh/) - React hooks for Ethereum
+
+## Prerequisites
+
+- Node.js (v16 or higher)
+- Yarn package manager
+- A Farcaster account for testing
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd celo-buy-hypercert-miniapp
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables:
+   Create a `.env.local` file with the following variables:
+   ```
+   NEXT_PUBLIC_URL=your_app_url
+   ```
+
+## Development
+
+To run the app locally:
 
 ```bash
-$ yarn
+npm run dev
 ```
 
-To run the app:
+Visit `http://localhost:3000` in your browser.
 
-```bash
-$ yarn dev
-```
+## Usage
 
-## Running on localhost with Ngrok
+1. Connect your wallet using the "Connect Wallet" button.
+2. Browse the available Hypercerts.
+3. Click on a Hypercert to view its details.
+4. Enter the number of units you wish to purchase and select the currency (CELO or USD).
+5. Click "Buy Fractions" to complete the transaction.
 
-To expose your **localhost** server to the internet using **ngrok**, install and run:
+## Contributing
 
-```bash
-ngrok http 3000
-```
-This will generate a public URL ending in:
+We welcome contributions! If you would like to contribute to this project, please follow these steps:
 
-```
-.ngrok-free.app
-```
-
-You can use this URL to open the app on your mobile device or a browser to test its functionality.
-
-## Running on localhost with Frame.js Debugger
-
-You can debug and see how the frame will work on using the Frame.js debugger.
-
-Just type:
-
-```
-$ frames
-```
-
-And a debugger link like this will appear in the console:
-```
-http://localhost:3010
-```
-
-Use this local debugger to test your frame interactions before deploying.
-
-## Deploy on Vercel
-
-To deploy your frame you just need to 
-
-````
-vercel
-````
-
-after you maked just that working as spected you can deploy on prod
-
-```
-vercel --prod
-```
-
-## Testing the Frame
-
-To test the frame, open the Warpcast app, go to Developer Tools, and test both the embedded image and the full frame.
-
-
-
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/YourFeature`).
+3. Make your changes and commit them (`git commit -m 'Add some feature'`).
+4. Push to the branch (`git push origin feature/YourFeature`).
+5. Open a pull request.

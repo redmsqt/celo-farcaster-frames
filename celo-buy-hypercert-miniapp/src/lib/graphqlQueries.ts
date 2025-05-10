@@ -1,5 +1,6 @@
 import { gql, request } from 'graphql-request';
 import { HypercertExchangeClient, ChainId } from "@hypercerts-org/marketplace-sdk";
+import { ethers, JsonRpcProvider, JsonRpcSigner } from 'ethers';
 
 // const endpoint = 'https://staging-api.hypercerts.org/v1/graphql';
 const endpoint = 'https://api.hypercerts.org/v1/graphql';
@@ -65,6 +66,8 @@ const createHypercertByIdQuery = (id: string) => gql`
           pricePerPercentInToken
           pricePerPercentInUSD
           chainId
+          currency
+          signature
         }
         cheapestOrder {
           amounts
@@ -131,25 +134,28 @@ export async function getAllHypercerts() {
 
 // export async function buyHypercertFraction(
 //   order: any,
-//   provider: any,
-//   signer: any,
+//   // provider: any,
+//   // signer: any,
 //   unitsToBuy: bigint,
 //   recipientAddress?: string
 // ) {
 //   try {
-//     // Initialize the HypercertExchangeClient
+//     const provider = new JsonRpcProvider();
+//     const signer = new JsonRpcSigner(provider, recipientAddress || "");
+//     // // Initialize the HypercertExchangeClient
 //     const hypercertExchangeClient = new HypercertExchangeClient(ChainId.CELO, provider, signer);
     
-//     // Get the price per unit from the order
-//     const pricePerUnit = BigInt(order.price);
+//     // // Get the price per unit from the order
+//     const pricePerUnit = BigInt(Math.floor(order.pricePerPercentInToken * 10**18));
     
-//     // Calculate total price
+//     // // Calculate total price
 //     const totalPrice = pricePerUnit * unitsToBuy;
     
-//     // Get the recipient address (if not provided, the signer's address will be used)
+//     // // Get the recipient address (if not provided, the signer's address will be used)
 //     const address = recipientAddress || await signer.getAddress();
     
 //     // Generate the taker order
+//     // error is coming from here
 //     const takerOrder = hypercertExchangeClient.createFractionalSaleTakerBid(
 //       order,
 //       address,
@@ -158,7 +164,22 @@ export async function getAllHypercerts() {
 //     );
     
 //     // Check and set ERC20 approval if needed
-//     const currentAllowance = await hypercertExchangeClient.getErc20Allowance(order.currency);
+//     const tokenContract = order.currency;
+//     const exchangeAddress = hypercertExchangeClient.addresses;
+//     const signerAddress = await signer.getAddress();
+    
+//     // Get the current allowance using the provider directly
+//     const erc20Interface = new ethers.Interface([
+//       "function allowance(address owner, address spender) view returns (uint256)"
+//     ]);
+    
+//     const allowanceData = erc20Interface.encodeFunctionData("allowance", [signerAddress, exchangeAddress]);
+//     const allowanceResult = await provider.call({
+//       to: tokenContract,
+//       data: allowanceData
+//     });
+    
+//     const currentAllowance = BigInt(allowanceResult);
     
 //     if (currentAllowance < totalPrice) {
 //       const approveTx = await hypercertExchangeClient.approveErc20(
@@ -177,9 +198,9 @@ export async function getAllHypercerts() {
 //       await transferManagerApprove.wait();
 //     }
     
-//     // Set the value if the currency is the native token (CELO)
+//     // // Set the value if the currency is the native token (CELO)
 //     const zeroAddress = "0x0000000000000000000000000000000000000000";
-//     const overrides = order.currency === zeroAddress ? { value: totalPrice } : undefined;
+//     const overrides = order.currency === zeroAddress ? { value: totalPrice } : {};
     
 //     // Execute the order
 //     const tx = await hypercertExchangeClient.executeOrder(
@@ -195,9 +216,10 @@ export async function getAllHypercerts() {
     
 //     return {
 //       success: true,
-//       transactionHash: receipt?.transactionHash,
-//       receipt
+//       transactionHash: receipt?.hash,
+//       receipt: receipt
 //     };
+//     console.log("try")
 //   } catch (error) {
 //     console.error("Error buying hypercert fraction:", error);
 //     return {
@@ -206,3 +228,104 @@ export async function getAllHypercerts() {
 //     };
 //   }
 // }
+
+export async function buyHypercertFraction(
+  order: any,
+  unitsToBuy: bigint,
+  recipientAddress: string,
+  signer: JsonRpcSigner
+) {
+  try {
+    // const provider = new JsonRpcProvider();
+    // const signer = new JsonRpcSigner(provider, recipientAddress || "");
+    // Initialize the HypercertExchangeClient
+    const hypercertExchangeClient = new HypercertExchangeClient(ChainId.CELO, signer.provider, signer);
+    
+    // Get the price per unit from the order
+    const pricePerUnit = BigInt(Math.floor(order.pricePerPercentInToken * 10**18));
+    
+    // Calculate total price
+    const totalPrice = pricePerUnit * unitsToBuy;
+    
+    // Get the recipient address (if not provided, the signer's address will be used)
+    const address = recipientAddress || await signer.getAddress();
+    
+    // Generate the taker order with the required properties according to the Taker type
+    const takerOrder = {
+      buyer: address,
+      recipient: address, // Adding the required recipient property
+      units: unitsToBuy.toString(),
+      price: pricePerUnit.toString(),
+      chainId: order.chainId,
+      currency: order.currency,
+      additionalParameters: "0x"
+    };
+    
+    // Check and set ERC20 approval if needed
+    const tokenContract = order.currency;
+    const exchangeAddress = hypercertExchangeClient.addresses.EXCHANGE_V2;
+    const signerAddress = await signer.getAddress();
+    
+    // Get the current allowance using the provider directly
+    const erc20Interface = new ethers.Interface([
+      "function allowance(address owner, address spender) view returns (uint256)"
+    ]);
+    console.log("signer", signer)
+    
+    const allowanceData = erc20Interface.encodeFunctionData("allowance", [signerAddress, exchangeAddress]);
+    const allowanceResult = await signer.provider.call({
+      to: tokenContract,
+      data: allowanceData
+    });
+    
+    console.log("here allowanceResult", allowanceResult);
+    const currentAllowance = allowanceResult === "0x" ? 0n : BigInt(allowanceResult);
+    
+    if (currentAllowance < totalPrice) {
+      // Using a small approval amount (0.01 tokens) for testing
+      const smallApprovalAmount = BigInt(10n ** 16n); // 0.01 tokens (10^16 wei)
+      const approveTx = await hypercertExchangeClient.approveErc20(
+        order.currency,
+        smallApprovalAmount
+      );
+      await approveTx.wait();
+      console.log("passed approve here ", approveTx);
+    }
+    // Check and grant transfer manager approval if needed
+    const isTransferManagerApproved = await hypercertExchangeClient.isTransferManagerApproved();
+    if (!isTransferManagerApproved) {
+      const transferManagerApprove = await hypercertExchangeClient
+        .grantTransferManagerApproval()
+        .call();
+      await transferManagerApprove.wait();
+    }
+    
+    // Set the value if the currency is the native token (CELO)
+    const zeroAddress = "0x0000000000000000000000000000000000000000";
+    const overrides = order.currency === zeroAddress ? { value: totalPrice } : {};
+    
+    // Execute the order
+    const tx = await hypercertExchangeClient.executeOrder(
+      order,
+      takerOrder,
+      order.signature,
+      undefined,
+      overrides
+    ).call();
+    
+    // Wait for transaction to complete
+    const receipt = await tx.wait();
+    
+    return {
+      success: true,
+      transactionHash: receipt?.hash,
+      receipt: receipt
+    };
+  } catch (error) {
+    console.error("Error buying hypercert fraction:", error);
+    return {
+      success: false,
+      error
+    };
+  }
+}
