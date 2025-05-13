@@ -22,10 +22,10 @@ export default function Hypercerts() {
   const [context, setContext] = useState<Context.FrameContext>();
   const appUrl = process.env.NEXT_PUBLIC_URL;
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(5);
   const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const [search_id, setSearchId] = useState("");
+  const [search_id] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   // const { client } = useHypercertClient();
 
@@ -296,7 +296,7 @@ export default function Hypercerts() {
             </form>
             {isSearching && (
               <div className="mt-2 text-sm text-gray-600">
-                Showing results for "{searchTerm}" ({totalCount} found)
+                Showing results for &quot;{searchTerm}&quot; ({totalCount} found)
               </div>
             )}
           </div>

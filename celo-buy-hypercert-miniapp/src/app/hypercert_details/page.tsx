@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import sdk, { type Context } from "@farcaster/frame-sdk";
 import { getHypercertById } from "~/lib/graphqlQueries";
+import Link from "next/link";
 
 interface HypercertData {
   hypercert_id: string;
@@ -35,7 +36,7 @@ export default function HypercertDetails() {
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
-  const appUrl = process.env.NEXT_PUBLIC_URL;
+  // const appUrl = process.env.NEXT_PUBLIC_URL;
 
   useEffect(() => {
     const load = async () => {
@@ -263,7 +264,7 @@ export default function HypercertDetails() {
                   }}
                 </ConnectButton.Custom>
                 
-                <a 
+                <Link 
                   href="/"
                   className="text-center py-3 text-teal-600 hover:text-teal-800 font-medium transition-colors duration-200 flex items-center justify-center"
                 >
@@ -271,7 +272,7 @@ export default function HypercertDetails() {
                     <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
                   </svg>
                   Back to Marketplace
-                </a>
+                </Link>
               </div>
             </div>
           </div>

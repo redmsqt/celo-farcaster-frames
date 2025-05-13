@@ -10,7 +10,6 @@ const Hypercerts = dynamic(() => import("~/components/Hypercerts"), {
 });
 
 export default function App(
-  { title }: { title?: string } = { title: "buy a fraction of a hypercert on Celo" }
 ) {
   return (<Hypercerts />);
 }
