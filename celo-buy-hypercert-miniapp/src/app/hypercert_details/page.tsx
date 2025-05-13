@@ -19,9 +19,9 @@ interface HypercertData {
   orders?: {
     totalUnitsForSale: number;
     data: {
-      pricePerPercentInToken: number;
-      pricePerPercentInUSD: number;
-      chainId: string;
+      pricePerPercentInToken: string;
+      pricePerPercentInUSD: string;
+      chainId: number;
     }[];
     cheapestOrder?: {
       amounts: number[];
