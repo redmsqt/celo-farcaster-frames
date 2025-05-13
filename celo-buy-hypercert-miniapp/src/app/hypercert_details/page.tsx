@@ -4,33 +4,73 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import sdk, { type Context } from "@farcaster/frame-sdk";
-import { getHypercertById, buyHypercertFraction } from "../../lib/graphqlQueries";
-import { useAccount, WagmiProvider } from "wagmi";
-import { JsonRpcProvider, JsonRpcSigner } from 'ethers';
-import { usePublicClient, useWalletClient, UseSignMessageParameters } from "wagmi";
+import { getHypercertById, buyHypercertFraction, MarketplaceOrder } from "../../lib/graphqlQueries";
+import { useAccount, useWalletClient, useConfig } from "wagmi";
+import { Config, getConnectorClient } from '@wagmi/core';
+import { BrowserProvider, JsonRpcSigner } from 'ethers';
+import type { Account, Chain, Client, Transport } from 'viem';
+import Link from "next/link";
 
+// interface HypercertData {
+//   hypercert_id: string;
+//   units: number;
+//   metadata: {
+//     image: string;
+//     name: string;
+//     work_scope: string;
+//     description: string;
+//   };
+//   orders?: {
+//     totalUnitsForSale: number;
+//     data: {
+//       price: number;
+//       pricePerPercentInUSD: number;
+//       chainId: string;
+//       currency: string;
+//       signature: string;
+//     }[];
+//     cheapestOrder?: {
+//       amounts: number[];
+//     };
+//   };
+// }
 interface HypercertData {
   hypercert_id: string;
   units: number;
   metadata: {
     image: string;
     name: string;
-    work_scope: string;
+    work_scope: string | string[];
     description: string;
   };
   orders?: {
     totalUnitsForSale: number;
-    data: {
-      pricePerPercentInToken: number;
-      pricePerPercentInUSD: number;
-      chainId: string;
-      currency: string;
-      signature: string;
-    }[];
+    data: MarketplaceOrder[];
     cheapestOrder?: {
       amounts: number[];
     };
   };
+}
+
+function clientToSigner(client: Client<Transport, Chain, Account>) {
+  const { account, chain, transport } = client;
+  const network = {
+    chainId: chain.id,
+    name: chain.name,
+    ensAddress: chain.contracts?.ensRegistry?.address,
+  };
+  const provider = new BrowserProvider(transport, network);
+  const signer = new JsonRpcSigner(provider, account.address);
+  return signer;
+}
+
+// Action to convert a viem Wallet Client to an ethers.js Signer
+async function getEthersSigner(
+  config: Config,
+  { chainId }: { chainId?: number } = {},
+) {
+  const client = await getConnectorClient(config, { chainId });
+  return clientToSigner(client);
 }
 
 export default function HypercertDetails() {
@@ -39,19 +79,17 @@ export default function HypercertDetails() {
   const [hypercert, setHypercert] = useState<HypercertData | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
-  const [purchaseStatus, setPurchaseStatus] = useState<{success?: boolean; error?: any; transactionHash?: string}>({}); 
+  const [purchaseStatus, setPurchaseStatus] = useState<{ success?: boolean; error?: string; transactionHash?: string }>({});
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [unitsToBuy, setUnitsToBuy] = useState<number>(0);
   const [selectedCurrency, setSelectedCurrency] = useState<'CELO' | 'USD'>('CELO');
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
-  const appUrl = process.env.NEXT_PUBLIC_URL;
+  // const appUrl = process.env.NEXT_PUBLIC_URL;
   
   const { address } = useAccount();
   const { data: walletClient } = useWalletClient();
-  const provider = WagmiProvider;
-  // const provider = usePublicClient();
-  // const { data: signer } = useSigner();
+  const config = useConfig();
 
   useEffect(() => {
     const load = async () => {
@@ -80,7 +118,7 @@ export default function HypercertDetails() {
       try {
         const data = await getHypercertById(id);
         if (data && Array.isArray(data) && data.length > 0) {
-          setHypercert(data[0]);
+          setHypercert(data[0] as unknown as HypercertData);
         } else {
           setHypercert(data as unknown as HypercertData);
         }
@@ -102,15 +140,18 @@ export default function HypercertDetails() {
 
   const handleBuyFraction = async () => {
     if (!hypercert?.orders?.data || !address || !walletClient) {
+      setPurchaseStatus({ error: "Missing required data" });
       return;
     }
-    console.log("got here", walletClient);
-    const provider = new JsonRpcProvider("https://celo-mainnet.g.alchemy.com/v2/4FF6xgfo305aOiFhplzY7M6AaWWZMmg_");
-  // Create a signer that uses the walletClient to sign
-    const signer = new JsonRpcSigner(provider, address);
+
+    const signer = await getEthersSigner(config, { chainId: 42220 });
+  //   const provider = new JsonRpcProvider("https://celo-mainnet.g.alchemy.com/v2/4FF6xgfo305aOiFhplzY7M6AaWWZMmg_");
+  // // Create a signer that uses the walletClient to sign
+  //   const signer = new JsonRpcSigner(provider, address);
     
     setPurchasing(true);
     setPurchaseStatus({});
+    console.log("got here", signer);
     
     try {
       const order = hypercert.orders.data[0];
@@ -120,16 +161,22 @@ export default function HypercertDetails() {
         order,
         unitsToBuyBigInt,
         address,
+        BigInt(hypercert.units),
         signer
       );
       
-      setPurchaseStatus(result);
+      setPurchaseStatus({
+        success: result.success,
+        transactionHash: result.transactionHash,
+        error: result.error ? String(result.error) : undefined
+      });
+      
       if (result.success) {
         setShowPurchaseModal(false);
       }
     } catch (error) {
       console.error("Error purchasing hypercert fraction:", error);
-      setPurchaseStatus({ success: false, error });
+      setPurchaseStatus({ success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' });
     } finally {
       setPurchasing(false);
     }
@@ -168,8 +215,8 @@ export default function HypercertDetails() {
     }
     
     const pricePerUnit = selectedCurrency === 'CELO' 
-      ? hypercert.orders.data[0].pricePerPercentInToken 
-      : hypercert.orders.data[0].pricePerPercentInUSD;
+      ? parseFloat(hypercert.orders.data[0].price) 
+      : parseFloat(hypercert.orders.data[0].pricePerPercentInUSD);
     
     return (pricePerUnit * unitsToBuy).toFixed(2);
   };
@@ -252,7 +299,7 @@ export default function HypercertDetails() {
                     <div className="text-gray-700 font-medium">Price per unit (CELO):</div>
                     <div className="font-bold text-teal-700">
                       {hypercert?.orders?.data && hypercert.orders.data.length > 0
-                        ? `${Number(hypercert.orders.data[0].pricePerPercentInToken).toFixed(2)} CELO`
+                        ? `${Number(hypercert.orders.data[0].price).toFixed(2)} CELO`
                         : "Not for sale"}
                     </div>
                   </div>
@@ -368,7 +415,7 @@ export default function HypercertDetails() {
                     }}
                   </ConnectButton.Custom>
                   
-                  <a 
+                  <Link 
                     href="/"
                     className="text-center py-3 text-teal-600 hover:text-teal-800 font-medium transition-colors duration-200 flex items-center justify-center"
                   >
@@ -376,7 +423,7 @@ export default function HypercertDetails() {
                       <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
                     </svg>
                     Back to Marketplace
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -400,37 +447,37 @@ export default function HypercertDetails() {
             <h2 className="text-xl font-bold text-gray-900 mb-4">Buy Hypercert Fractions</h2>
             
             {purchaseStatus.success && (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
-                <div className="flex items-center text-green-700">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span className="font-medium">Purchase successful!</span>
-                </div>
-                {purchaseStatus.transactionHash && (
-                  <a 
-                    href={`https://explorer.celo.org/mainnet/tx/${purchaseStatus.transactionHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-green-600 hover:text-green-800 underline mt-2 inline-block"
-                  >
-                    View transaction
-                  </a>
-                )}
+            <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+              <div className="flex items-center text-green-700">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span className="font-medium">Purchase successful!</span>
               </div>
-            )}
-            
-            {purchaseStatus.error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-                <div className="flex items-center text-red-700">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                  <span className="font-medium">Transaction failed</span>
-                </div>
-                <p className="text-sm text-red-600 mt-1">Please try again or contact support if the issue persists.</p>
+              {purchaseStatus.transactionHash && (
+                <a
+                  href={`https://explorer.celo.org/mainnet/tx/${purchaseStatus.transactionHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-green-600 hover:text-green-800 underline mt-2 inline-block"
+                >
+                  View transaction
+                </a>
+              )}
+            </div>
+          )}
+
+          {purchaseStatus.error && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+              <div className="flex items-center text-red-700">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <span className="font-medium">Transaction failed</span>
               </div>
-            )}
+              <p className="text-sm text-red-600 mt-1">{purchaseStatus.error}</p>
+            </div>
+          )}
             
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -503,7 +550,7 @@ export default function HypercertDetails() {
               <button
                 type="button"
                 onClick={handleBuyFraction}
-                disabled={purchasing}
+                disabled={purchasing || !hypercert?.orders?.data || !address || !walletClient}
                 className={`px-4 py-2 rounded-lg text-white ${
                   purchasing
                     ? 'bg-gray-400 cursor-not-allowed'

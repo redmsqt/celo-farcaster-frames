@@ -1,6 +1,6 @@
 import { HypercertClient } from "@hypercerts-org/sdk";
 import { useWalletClient, usePublicClient } from "wagmi";
-import { gql, GraphQLClient, request } from 'graphql-request';
+import { gql, request } from 'graphql-request';
 
 export const useHypercertClient = () => {
   const { data: walletClient } = useWalletClient();

@@ -1,4 +1,4 @@
-import { Color } from './../../style/Color';
+import { Color } from '../../style/Color';
 import { Address } from 'viem';
 
 type ChainId = '42220';

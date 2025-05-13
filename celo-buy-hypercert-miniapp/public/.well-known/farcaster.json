@@ -1,0 +1,16 @@
+{
+    "name": "Celo Buy Hypercert",
+    "description": "A Farcaster Frame that allows users to purchase Hypercerts on the Celo blockchain",
+    "developer": "AbolareRoheemah",
+    "website": "https://celo.org",
+    "accountAssociation": {},
+    "display": {
+      "type": "iframe",
+      "width": 800,
+      "height": 600
+    },
+    "capabilities": {
+      "notifications": false,
+      "wallet": true
+    }
+  }

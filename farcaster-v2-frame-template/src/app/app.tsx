@@ -2,15 +2,12 @@
 
 import dynamic from "next/dynamic";
 
-// const Demo = dynamic(() => import("~/components/Demo"), {
-//   ssr: false,
-// });
-const Hypercerts = dynamic(() => import("~/components/Hypercerts"), {
+const Demo = dynamic(() => import("~/components/Demo"), {
   ssr: false,
 });
 
 export default function App(
-  { title }: { title?: string } = { title: "buy a fraction of a hypercert on Celo" }
+  { title }: { title?: string } = { title: "Buy Hypercert" }
 ) {
-  return (<Hypercerts />);
+  return <Demo title={title} />;
 }
