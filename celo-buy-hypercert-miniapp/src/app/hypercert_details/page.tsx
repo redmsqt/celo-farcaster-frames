@@ -13,7 +13,7 @@ interface HypercertData {
   metadata: {
     image: string;
     name: string;
-    work_scope: string;
+    work_scope: string | string[]; // Updated to allow string or string[]
     description: string;
   };
   orders?: {
@@ -65,7 +65,7 @@ export default function HypercertDetails() {
       try {
         const data = await getHypercertById(id);
         if (data && Array.isArray(data) && data.length > 0) {
-          setHypercert(data[0]);
+          setHypercert(data[0] as HypercertData); // Ensure type matches HypercertData
         } else {
           setHypercert(data as unknown as HypercertData);
         }
