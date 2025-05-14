@@ -1,15 +1,15 @@
 import { useAccount, useWalletClient } from "wagmi";
 import { useRouter } from "next/navigation";
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+// import { create } from "zustand";
+// import { persist } from "zustand/middleware";
 import { useHypercertExchangeClient } from "./use-hypercert-exchange-client";
 import { useStepProcessDialogContext } from "./step-process-dialog";
-
 import { BuyFractionalStrategy } from "./BuyFractionalStrategy";
 import { EOABuyFractionalStrategy } from "../components/EOABuyFractionalStrategy";
 import { SafeBuyFractionalStrategy } from "~/components/SafeBuyFractionalStrategy";
 import { getAddress, isAddress } from "viem";
-import { createContext, useContext } from "react";
+import { useAccountStore } from "./account-store";
+// import { createContext, useContext } from "react";
 
 export const useBuyFractionalStrategy = (): (() => BuyFractionalStrategy) => {
   const { address, chainId } = useAccount();
@@ -18,30 +18,6 @@ export const useBuyFractionalStrategy = (): (() => BuyFractionalStrategy) => {
   const router = useRouter();
   const walletClient = useWalletClient();
 
-
-    type AccountType = "eoa" | "safe";
-
-    type Account = {
-    type: AccountType;
-    address: `0x${string}`;
-    };
-
-  interface AccountState {
-    selectedAccount: Account | null;
-    setSelectedAccount: (account: Account | null) => void;
-  }
-
-  const useAccountStore = create<AccountState>()(
-    persist(
-      (set) => ({
-        selectedAccount: null,
-        setSelectedAccount: (account) => set({ selectedAccount: account }),
-      }),
-      {
-        name: "selected-account-storage",
-      },
-    ),
-  );
   const { selectedAccount } = useAccountStore();
   const activeAddress = selectedAccount?.address || address;
 
@@ -55,8 +31,10 @@ export const useBuyFractionalStrategy = (): (() => BuyFractionalStrategy) => {
     if (!router) throw new Error("No router found");
 
     const buyerAddress = getAddress(activeAddress);
+    console.log("selected user", selectedAccount?.type)
 
     if (selectedAccount?.type === "safe") {
+      console.log("here safe")
       if (!selectedAccount) throw new Error("No selected account found");
       return new SafeBuyFractionalStrategy(
         buyerAddress,
@@ -67,7 +45,7 @@ export const useBuyFractionalStrategy = (): (() => BuyFractionalStrategy) => {
         router,
       );
     }
-
+    console.log("not safe")
     return new EOABuyFractionalStrategy(
       buyerAddress,
       chainId,

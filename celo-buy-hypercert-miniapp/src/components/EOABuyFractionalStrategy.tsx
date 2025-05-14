@@ -175,6 +175,7 @@ export class EOABuyFractionalStrategy extends BuyFractionalStrategy {
       await setStep("Setting up order execution");
       const overrides =
         currency.address === zeroAddress ? { value: totalPrice } : undefined;
+        console.log("got innnnn")
       const { call } = this.exchangeClient.executeOrder(
         order,
         takerOrder,

@@ -16,6 +16,7 @@ import { HypercertFull, HypercertFullFragment } from "~/lib/hypercert-full.fragm
 import {useRouter} from "next/navigation";
 import { useToast } from "~/hooks/use-toast";
 import { getHypercert } from "~/lib/getHypercert";
+import { useStore } from "~/components/buy-fractional-order-form";
 
 interface HypercertData {
   hypercert_id: string;
@@ -56,6 +57,7 @@ async function getEthersSigner(
 }
 
 export default function HypercertDetails() {
+  const emitError = useStore((state: any) => state.error);
   const router = useRouter();
   const { toast } = useToast();
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
@@ -63,14 +65,16 @@ export default function HypercertDetails() {
   const [hypercert, setHypercert] = useState<HypercertFull | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeOrderNonce, setActiveOrderNonce] = useState<string | null>(null);
-  const [cancellingOrderNonce] = useState<string | null>(null);
+  const [cancellingOrderNonce, setCancellingOrderNonce] = useState<string | null>(null);
   const [unitsToBuy, setUnitsToBuy] = useState<number>(0);
   const [selectedCurrency] = useState<'CELO' | 'USD'>('CELO');
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const isProcessing = hypercert?.orders?.data?.[0].orderNonce === activeOrderNonce;
+  const isCancelling = hypercert?.orders?.data?.[0].orderNonce === cancellingOrderNonce;
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -88,6 +92,12 @@ export default function HypercertDetails() {
       };
     }
   }, [isSDKLoaded]);
+
+  useEffect(() =>{
+    if (emitError) {
+      setErrorMessage(emitError instanceof Error ? emitError.message : String(emitError));
+    }
+  }, [emitError]);
 
   useEffect(() => {
     const fetchHypercert = async () => {
@@ -161,7 +171,6 @@ export default function HypercertDetails() {
   const handleBuyOrderComplete = useCallback(() => {
     setActiveOrderNonce(null);
     setShowSuccessModal(true);
-    // router.refresh();
   }, []);
 
   const calculateTotalPrice = () => {
@@ -341,7 +350,7 @@ export default function HypercertDetails() {
                                 <BuyOrderDialog
                                   order={hypercert?.orders?.data?.[0] as OrderFragment || undefined}
                                   hypercert={hypercert as HypercertFull}
-                                  isProcessing={isProcessing}
+                                  isProcessing={isProcessing && !errorMessage}
                                   onBuyOrder={handleBuyOrder}
                                   onComplete={handleBuyOrderComplete}
                                   trigger={
@@ -355,7 +364,7 @@ export default function HypercertDetails() {
                                         !!activeOrderNonce ||
                                         !!cancellingOrderNonce}
                                     >
-                                      {isProcessing ? (
+                                      {isProcessing && !errorMessage ? (
                                         <div className="flex items-center justify-center">
                                           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                                           Processing...
@@ -432,6 +441,29 @@ export default function HypercertDetails() {
                   </svg>
                   Back to Marketplace
                 </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Modal */}
+      {errorMessage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative">
+            <button 
+              onClick={() => setErrorMessage(null)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Error</h2>
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+              <div className="flex items-center text-red-700">
+                <span className="font-medium">{errorMessage}</span>
+              </div>
             </div>
           </div>
         </div>

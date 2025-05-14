@@ -25,10 +25,18 @@ import z from "zod";
 import { DEFAULT_NUM_UNITS, DEFAULT_NUM_UNITS_DECIMALS } from "~/lib/hypercerts";
 import { useBuyFractionalStrategy } from "~/lib/useBuyFractionalStrategy";
 import { useMutation } from "@tanstack/react-query";
+import { create } from "zustand";
+
+
+export const useStore = create((set) => ({
+  error: null,
+  emitError: (newError: any) => set({ error: newError }),
+}));
 
 export const useBuyFractionalMakerAsk = () => {
     const strategy = useBuyFractionalStrategy();
     const { toast } = useToast();
+    const emitError = useStore((state: any) => state.emitError);
   
     return useMutation({
       mutationKey: ["buyFractionalMakerAsk"],
@@ -38,6 +46,7 @@ export const useBuyFractionalMakerAsk = () => {
           description: e.message,
           duration: 5000,
         });
+        emitError(e)
       },
       mutationFn: async (ask: BuyFractionalMakerAskParams) => {
         await strategy().execute(ask);
@@ -194,6 +203,7 @@ export const BuyFractionalOrderForm = ({
       onCompleted?.();
     } catch (error) {
       console.error("Error buying fractional order:", error);
+      throw error;
     }
   };
 
