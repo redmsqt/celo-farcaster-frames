@@ -13,6 +13,7 @@ import Countdown from "./countdown";
 import { useVerification } from "~/hooks/useVerification";
 import { useBuilderScore } from "~/hooks/useBuilderScore";
 import { Londrina_Solid } from "next/font/google";
+import RewardTiers from "./reward-tiers";
 
 const londrina = Londrina_Solid({
   weight: "400",
@@ -156,7 +157,8 @@ export default function Dashboard() {
                   isLoading={isLoadingScore}
                 />
               )}
-              <div className="flex justify-end items-center mb-4">
+              <div className="flex flex-row items-center justify-between gap-4 mb-4">
+                <RewardTiers />
                 <Countdown />
               </div>
               <Leaderboard
