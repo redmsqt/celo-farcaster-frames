@@ -8,7 +8,7 @@
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "allowImportingTsExtensions": true,
+    "typeRoots": ["./node_modules/@types", "./src/types"],
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,

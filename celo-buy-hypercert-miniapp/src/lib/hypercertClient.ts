@@ -1,3 +1,4 @@
+"use client"
 import { HypercertClient } from "@hypercerts-org/sdk";
 import { useWalletClient, usePublicClient } from "wagmi";
 import { gql, request } from 'graphql-request';

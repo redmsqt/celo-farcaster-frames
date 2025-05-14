@@ -197,122 +197,122 @@ export const getPricePerUnit = (
 /**
  * Buy a fraction of a hypercert based on the exact implementation from the repository
  */
-export async function buyHypercertFraction(
-  order: MarketplaceOrder,
-  unitsToBuy: bigint,
-  recipientAddress: string,
-  totalUnitsInHypercert: bigint,
-  signer: Signer
-) {
-  try {
-    // Initialize client with the signer only, ensuring provider is not null
-    const provider = signer.provider;
-    if (!provider) {
-      throw new Error('Signer provider is null');
-    }
-    const hypercertExchangeClient = new HypercertExchangeClient(ChainId.CELO, provider, signer);
+// export async function buyHypercertFraction(
+//   order: MarketplaceOrder,
+//   unitsToBuy: bigint,
+//   recipientAddress: string,
+//   totalUnitsInHypercert: bigint,
+//   signer: Signer
+// ) {
+//   try {
+//     // Initialize client with the signer only, ensuring provider is not null
+//     const provider = signer.provider;
+//     if (!provider) {
+//       throw new Error('Signer provider is null');
+//     }
+//     const hypercertExchangeClient = new HypercertExchangeClient(ChainId.CELO, provider, signer);
     
-    // Get buyer address from signer
-    const buyerAddress = await signer.getAddress();
-    // Create taker order - structure exactly matching the repository
-    const takerOrder = {
-      recipient: recipientAddress,
-      buyer: buyerAddress,
-      units: unitsToBuy.toString(),
-      price: order.price,
-      currency: order.currency,
-      chainId: order.chainId,
-      additionalParameters: order.additionalParameters || '0x',
-    };
+//     // Get buyer address from signer
+//     const buyerAddress = await signer.getAddress();
+//     // Create taker order - structure exactly matching the repository
+//     const takerOrder = {
+//       recipient: recipientAddress,
+//       buyer: buyerAddress,
+//       units: unitsToBuy.toString(),
+//       price: order.price,
+//       currency: order.currency,
+//       chainId: order.chainId,
+//       additionalParameters: order.additionalParameters || '0x',
+//     };
 
-    // Check if using native currency or ERC20 token
-    const zeroAddress = '0x0000000000000000000000000000000000000000';
+//     // Check if using native currency or ERC20 token
+//     const zeroAddress = '0x0000000000000000000000000000000000000000';
     
-    // Set overrides for native currency
-    const overrides = order.currency === zeroAddress 
-      ? { value: BigInt(order.price) * unitsToBuy / BigInt(order.amounts[0]) } 
-      : {};
+//     // Set overrides for native currency
+//     const overrides = order.currency === zeroAddress 
+//       ? { value: BigInt(order.price) * unitsToBuy / BigInt(order.amounts[0]) } 
+//       : {};
     
-    // For ERC20 tokens, check and approve if needed
-    if (order.currency !== zeroAddress) {
-      const erc20Interface = new ethers.Interface([
-        'function allowance(address owner, address spender) view returns (uint256)',
-        'function approve(address spender, uint256 amount) returns (bool)',
-      ]);
+//     // For ERC20 tokens, check and approve if needed
+//     if (order.currency !== zeroAddress) {
+//       const erc20Interface = new ethers.Interface([
+//         'function allowance(address owner, address spender) view returns (uint256)',
+//         'function approve(address spender, uint256 amount) returns (bool)',
+//       ]);
       
-      const erc20Contract = new ethers.Contract(order.currency, erc20Interface, signer);
+//       const erc20Contract = new ethers.Contract(order.currency, erc20Interface, signer);
       
-      // Get the exchange address from the client
-      const exchangeAddress = hypercertExchangeClient.addresses.EXCHANGE_V2;
+//       // Get the exchange address from the client
+//       const exchangeAddress = hypercertExchangeClient.addresses.EXCHANGE_V2;
       
-      // Check current allowance
-      const allowance = await erc20Contract.allowance(buyerAddress, exchangeAddress);
+//       // Check current allowance
+//       const allowance = await erc20Contract.allowance(buyerAddress, exchangeAddress);
       
-      // Calculate required allowance
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const requiredAllowance = BigInt(order.pricePerPercentInToken as any * 1e18) * unitsToBuy / BigInt(order.amounts[0]);
+//       // Calculate required allowance
+//       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//       const requiredAllowance = BigInt(order.pricePerPercentInToken as any * 1e18) * unitsToBuy / BigInt(order.amounts[0]);
 
-      console.log("allowance", allowance, requiredAllowance)
+//       console.log("allowance", allowance, requiredAllowance)
       
-      // Approve if needed
-      if (allowance < requiredAllowance) {
-        console.log(`Approving ${requiredAllowance} for ${order.currency}`);
-        const tx = await erc20Contract.approve(exchangeAddress, requiredAllowance);
-        await tx.wait();
-      }
-      console.log("allowance done")
-    }
+//       // Approve if needed
+//       if (allowance < requiredAllowance) {
+//         console.log(`Approving ${requiredAllowance} for ${order.currency}`);
+//         const tx = await erc20Contract.approve(exchangeAddress, requiredAllowance);
+//         await tx.wait();
+//       }
+//       console.log("allowance done")
+//     }
     
-    // Validation checks
-    if (order.endTime < Math.floor(Date.now() / 1000)) {
-      throw new Error('Order has expired');
-    }
+//     // Validation checks
+//     if (order.endTime < Math.floor(Date.now() / 1000)) {
+//       throw new Error('Order has expired');
+//     }
     
-    if (order.chainId.toString() !== ChainId.CELO.toString()) {
-      throw new Error('Order chain ID does not match Celo');
-    }
+//     if (order.chainId.toString() !== ChainId.CELO.toString()) {
+//       throw new Error('Order chain ID does not match Celo');
+//     }
 
-    console.log('Executing order with:');
-    console.log('- Maker order:', order);
-    console.log('- Taker order:', takerOrder);
-    console.log('- Overrides:', overrides);
+//     console.log('Executing order with:');
+//     console.log('- Maker order:', order);
+//     console.log('- Taker order:', takerOrder);
+//     console.log('- Overrides:', overrides);
 
-    // Execute the order
-    const tx = await hypercertExchangeClient.executeOrder(
-      order,
-      takerOrder,
-      order.signature,
-      undefined, // No validator codes needed
-      overrides
-    ).call();
+//     // Execute the order
+//     const tx = await hypercertExchangeClient.executeOrder(
+//       order,
+//       takerOrder,
+//       order.signature,
+//       undefined, // No validator codes needed
+//       overrides
+//     ).call();
 
-    // console.log('Transaction submitted:', tx.hash);
-    const receipt = tx.wait();
-    console.log('Transaction confirmed:', receipt);
+//     // console.log('Transaction submitted:', tx.hash);
+//     const receipt = tx.wait();
+//     console.log('Transaction confirmed:', receipt);
 
-    return {
-      success: true,
-      transactionHash: "receipt.hash",
-      receipt,
-    };
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.error('Error buying hypercert fraction:', error);
+//     return {
+//       success: true,
+//       transactionHash: "receipt.hash",
+//       receipt,
+//     };
+//      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   } catch (error: any) {
+//     console.error('Error buying hypercert fraction:', error);
     
-    // Provide detailed error information for debugging
-    const errorDetails = {
-      message: error.message || 'Unknown error',
-      code: error.code,
-      data: error.data,
-      reason: error.reason
-    };
+//     // Provide detailed error information for debugging
+//     const errorDetails = {
+//       message: error.message || 'Unknown error',
+//       code: error.code,
+//       data: error.data,
+//       reason: error.reason
+//     };
     
-    console.error('Error details:', errorDetails);
+//     console.error('Error details:', errorDetails);
     
-    return {
-      success: false,
-      error: errorDetails.message,
-      details: errorDetails
-    };
-  }
-}
+//     return {
+//       success: false,
+//       error: errorDetails.message,
+//       details: errorDetails
+//     };
+//   }
+// }
