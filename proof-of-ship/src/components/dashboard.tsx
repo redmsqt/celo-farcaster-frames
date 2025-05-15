@@ -68,7 +68,7 @@ export default function Dashboard() {
 
   const selfApp = address
     ? new SelfAppBuilder({
-        appName: "Proof of ship",
+        appName: "Weekly builder rewards",
         scope: "proof-of-ship-scope",
         endpoint: `${window.location.origin}/api/verify`,
         userId: address,
@@ -114,7 +114,7 @@ export default function Dashboard() {
         <h1
           className={`text-3xl font-bold text-center text-white ${londrina.className} mb-8`}
         >
-          PROOF OF SHIP
+          Weekly Builder Rewards
         </h1>
         <div className="flex flex-col items-center">
           {!isVerified && !isVerificationLoading && selfApp && (

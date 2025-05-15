@@ -21,7 +21,7 @@ if (!projectId) {
 }
 
 export const config = getDefaultConfig({
-  appName: "Proof of Ship",
+  appName: "Weekly Builder Rewards",
   projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || "",
   // add mainnet to resolve ens
   chains: [celo, celoAlfajores, mainnet],

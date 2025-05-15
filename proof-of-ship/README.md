@@ -1,6 +1,6 @@
-# 🖼️ Proof of Ship Mini App
+# 🖼️ Weekly Builder Rewards Mini App
 
-Proof of ship mini app  enables users to verify their identity and build their reputation on the Celo network.
+Weekly builder rewards mini app  enables users to verify their identity and build their reputation on the Celo network.
 
 ## Features
 
