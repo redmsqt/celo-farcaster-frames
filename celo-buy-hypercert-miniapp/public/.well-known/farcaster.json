@@ -1,16 +1,23 @@
 {
-    "name": "Celo Buy Hypercert",
-    "description": "A Farcaster Frame that allows users to purchase Hypercerts on the Celo blockchain",
-    "developer": "AbolareRoheemah",
-    "website": "https://celo.org",
-    "accountAssociation": {},
-    "display": {
-      "type": "iframe",
-      "width": 800,
-      "height": 600
-    },
-    "capabilities": {
-      "notifications": false,
-      "wallet": true
-    }
+  "frame": {
+    "version": "1.0.0",
+    "name": "Celo Hypercerts Marketplace",
+    "iconUrl": "https://celo-farcaster-frames-chi.vercel.app/icon.png",
+    "splashImageUrl": "https://celo-farcaster-frames-chi.vercel.app/celosplash.png",
+    "splashBackgroundColor": "#EDFDFC",
+    "homeUrl": "https://celo-farcaster-frames-chi.vercel.app",
+    "subtitle": "Discover and invest in impact projects on Celo",
+    "description": "Purchase fractional ownership of hypercerts representing contributions to public goods on Celo.",
+    "screenshotUrls": [
+      "https://celo-farcaster-frames-chi.vercel.app/screenshot-Home.png",
+      "https://celo-farcaster-frames-chi.vercel.app/screenshot-Details.png"
+    ],
+    "primaryCategory": "social",
+    "tags": [
+      "hypercert",
+      "RWI",
+      "warpcast",
+      "public goods"
+    ]
   }
+}
