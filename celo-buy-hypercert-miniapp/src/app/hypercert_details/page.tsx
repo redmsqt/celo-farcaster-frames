@@ -4,68 +4,34 @@ import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import sdk, { type Context } from "@farcaster/frame-sdk";
-import { getHypercertById, MarketplaceOrder } from "../../lib/graphqlQueries";
-import { useAccount, useWalletClient, useConfig } from "wagmi";
-import { Config, getConnectorClient } from '@wagmi/core';
-import { BrowserProvider, JsonRpcSigner } from 'ethers';
-import type { Account, Chain, Client, Transport } from 'viem';
+import { getHypercertById } from "../../lib/graphqlQueries";
 import Link from "next/link";
 import { BuyOrderDialog } from "~/components/buy-order-dialog";
 import { OrderFragment } from "~/lib/order.fragment";
-import { HypercertFull, HypercertFullFragment } from "~/lib/hypercert-full.fragment";
-import {useRouter} from "next/navigation";
+import { HypercertFull } from "~/lib/hypercert-full.fragment";
+// import {useRouter} from "next/navigation";
 import { useToast } from "~/hooks/use-toast";
 import { getHypercert } from "~/lib/getHypercert";
 import { useStore } from "~/components/buy-fractional-order-form";
-import { Dialog, DialogOverlay, DialogContent, DialogClose } from "~/components/ui/dialog";
-
-interface HypercertData {
-  hypercert_id: string;
-  units: number;
-  metadata: {
-    image: string;
-    name: string;
-    work_scope: string | string[];
-    description: string;
-  };
-  orders?: {
-    totalUnitsForSale: number;
-    data: MarketplaceOrder[];
-    cheapestOrder?: {
-      amounts: number[];
-    };
-  };
-}
-
-function clientToSigner(client: Client<Transport, Chain, Account>) {
-  const { account, chain, transport } = client;
-  const network = {
-    chainId: chain.id,
-    name: chain.name,
-    ensAddress: chain.contracts?.ensRegistry?.address,
-  };
-  const provider = new BrowserProvider(transport, network);
-  const signer = new JsonRpcSigner(provider, account.address);
-  return signer;
-}
 
 export default function HypercertDetails() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const emitError = useStore((state: any) => state.error);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const emitHash = useStore((state: any) => state.hash);
-  const router = useRouter();
+  // const router = useRouter();
   const { toast } = useToast();
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
   const [context, setContext] = useState<Context.FrameContext>();
   const [hypercert, setHypercert] = useState<HypercertFull | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeOrderNonce, setActiveOrderNonce] = useState<string | null>(null);
-  const [cancellingOrderNonce, setCancellingOrderNonce] = useState<string | null>(null);
-  const [unitsToBuy, setUnitsToBuy] = useState<number>(0);
-  const [selectedCurrency] = useState<'CELO' | 'USD'>('CELO');
+  // const [cancellingOrderNonce, setCancellingOrderNonce] = useState<string | null>(null);
+  // const [unitsToBuy, setUnitsToBuy] = useState<number>(0);
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const isProcessing = hypercert?.orders?.data?.[0].orderNonce === activeOrderNonce;
-  const isCancelling = hypercert?.orders?.data?.[0].orderNonce === cancellingOrderNonce;
+  // const isCancelling = hypercert?.orders?.data?.[0].orderNonce === cancellingOrderNonce;
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -74,7 +40,6 @@ export default function HypercertDetails() {
     const load = async () => {
       const context = await sdk.context;
       setContext(context);
-      console.log("Farcaster SDK ready");
       sdk.actions.ready({});
     };
 
@@ -96,7 +61,6 @@ export default function HypercertDetails() {
   useEffect(() => {
     if (emitHash) {
       setTransactionHash(emitHash);
-      console.log("emitHash", emitHash)
     }
   }, [emitHash]);
 
@@ -125,38 +89,22 @@ export default function HypercertDetails() {
     fetchHypercert();
   }, [id]);
 
-  useEffect(() => {
-    if (hypercert?.orders?.cheapestOrder?.amounts && hypercert.orders.cheapestOrder.amounts.length > 0) {
-      setUnitsToBuy(Number(hypercert.orders.cheapestOrder.amounts[0]));
-    }
-  }, [hypercert]);
+  // useEffect(() => {
+  //   if (hypercert?.orders?.cheapestOrder?.amounts && hypercert.orders.cheapestOrder.amounts.length > 0) {
+  //     setUnitsToBuy(Number(hypercert.orders.cheapestOrder.amounts[0]));
+  //   }
+  // }, [hypercert]);
 
-  const getMinUnits = () => {
-    if (hypercert?.orders?.cheapestOrder?.amounts && hypercert.orders.cheapestOrder.amounts.length > 0) {
-      return Number(hypercert.orders.cheapestOrder.amounts[0]);
-    }
-    return 1;
-  };
+  // const getMinUnits = () => {
+  //   if (hypercert?.orders?.cheapestOrder?.amounts && hypercert.orders.cheapestOrder.amounts.length > 0) {
+  //     return Number(hypercert.orders.cheapestOrder.amounts[0]);
+  //   }
+  //   return 1;
+  // };
 
-  const getMaxUnits = () => {
-    return hypercert?.orders?.totalUnitsForSale || "0";
-  };
-
-  const handleUnitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    const min = getMinUnits();
-    const max = getMaxUnits();
-    
-    if (isNaN(value)) {
-      setUnitsToBuy(min);
-    } else if (value < min) {
-      setUnitsToBuy(min);
-    } else if (value.toString() > max) {
-      setUnitsToBuy(Number(max));
-    } else {
-      setUnitsToBuy(value);
-    }
-  };
+  // const getMaxUnits = () => {
+  //   return hypercert?.orders?.totalUnitsForSale || "0";
+  // };
 
   const handleBuyOrder = useCallback(
     (orderNonce: string) => {
@@ -174,17 +122,17 @@ export default function HypercertDetails() {
     setShowSuccessModal(true);
   }, []);
 
-  const calculateTotalPrice = () => {
-    if (!hypercert?.orders?.data || hypercert.orders.data.length === 0) {
-      return 0;
-    }
+  // const calculateTotalPrice = () => {
+  //   if (!hypercert?.orders?.data || hypercert.orders.data.length === 0) {
+  //     return 0;
+  //   }
     
-    const pricePerUnit = selectedCurrency === 'CELO' 
-      ? parseFloat(hypercert.orders.data[0].price) 
-      : parseFloat(hypercert.orders.data[0].pricePerPercentInUSD);
+  //   const pricePerUnit = selectedCurrency === 'CELO' 
+  //     ? parseFloat(hypercert.orders.data[0].price) 
+  //     : parseFloat(hypercert.orders.data[0].pricePerPercentInUSD);
     
-    return (pricePerUnit * unitsToBuy).toFixed(2);
-  };
+  //   return (pricePerUnit * unitsToBuy).toFixed(2);
+  // };
 
   if (loading) {
     return (
@@ -246,7 +194,7 @@ export default function HypercertDetails() {
                   <h2 className="text-md font-semibold text-gray-800 mb-2">Work Scope</h2>
                   <p className="text-gray-600">
                     {typeof hypercert.metadata.work_scope === 'string' 
-                      ? hypercert.metadata.work_scope.split(',').slice(0, 3).join(', ')
+                      ? (hypercert.metadata.work_scope as string).split(',').slice(0, 3).join(', ')
                       : Array.isArray(hypercert.metadata.work_scope)
                         ? (hypercert.metadata.work_scope as string[]).slice(0, 3).join(', ')
                         : hypercert.metadata.work_scope}

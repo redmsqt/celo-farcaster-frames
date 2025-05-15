@@ -1,6 +1,4 @@
 import { graphql, readFragment } from "./graphql";
-
-import { HYPERCERTS_API_URL_GRAPH } from "./hypercerts";
 import { HypercertFullFragment } from "./hypercert-full.fragment";
 import request from "graphql-request";
 import { getAddress, isAddress } from "viem";

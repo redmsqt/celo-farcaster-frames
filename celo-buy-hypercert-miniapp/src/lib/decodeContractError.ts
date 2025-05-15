@@ -5,13 +5,15 @@ import {
   OrderValidatorV2AAbi,
 } from "@hypercerts-org/contracts";
 
-export function decodeContractError(error: any, defaultMessage: string) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function decodeContractError(error: unknown, defaultMessage: string) {
   const abis = [TransferManagerAbi, HypercertExchangeAbi, OrderValidatorV2AAbi];
-  // @ts-ignore
-  const transactionData = (error?.info?.error?.data?.originalError?.data ||
-    error?.data?.originalError?.data ||
-    error?.data?.data ||
-    error?.data) as `0x${string}` | undefined;
+  const transactionData = (
+    (error as { info?: { error?: { data?: { originalError?: { data?: unknown } } } } })?.info?.error?.data?.originalError?.data ||
+    (error as { data?: { originalError?: { data?: unknown } } })?.data?.originalError?.data ||
+    (error as { data?: { data?: unknown } })?.data?.data ||
+    (error as { data?: unknown })?.data
+  ) as `0x${string}` | undefined;
 
   if (!transactionData) {
     return defaultMessage;

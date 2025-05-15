@@ -13,12 +13,15 @@ import { ExtraContent } from "~/components/extra-content";
 import { create } from "zustand";
 
 interface StoreState {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   hash: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   emitHash: (newHash: any) => void;
 }
 
 export const useStore = create<StoreState>((set) => ({
   hash: null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   emitHash: (newHash: any) => set({ hash: newHash }),
 }));
 

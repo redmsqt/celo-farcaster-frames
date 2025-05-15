@@ -31,10 +31,8 @@ export const useBuyFractionalStrategy = (): (() => BuyFractionalStrategy) => {
     if (!router) throw new Error("No router found");
 
     const buyerAddress = getAddress(activeAddress);
-    console.log("selected user", selectedAccount?.type)
 
     if (selectedAccount?.type === "safe") {
-      console.log("here safe")
       if (!selectedAccount) throw new Error("No selected account found");
       return new SafeBuyFractionalStrategy(
         buyerAddress,
@@ -42,7 +40,8 @@ export const useBuyFractionalStrategy = (): (() => BuyFractionalStrategy) => {
         exchangeClient,
         dialogContext,
         walletClient,
-        router,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        router.push as any,
       );
     }
     console.log("not safe")
@@ -52,7 +51,8 @@ export const useBuyFractionalStrategy = (): (() => BuyFractionalStrategy) => {
       exchangeClient,
       dialogContext,
       walletClient,
-      router,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      router.push as any,
     );
   };
 };

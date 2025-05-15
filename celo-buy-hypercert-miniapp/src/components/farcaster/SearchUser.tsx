@@ -441,7 +441,7 @@ export default function UserSearch() {
             <Button
               onClick={handleSendTip}
               disabled={!isConnected || isSendTxPending || isWritePending || isConfirming}
-              isLoading={isSendTxPending || isWritePending || isConfirming}
+              // isLoading={isSendTxPending || isWritePending || isConfirming}
               className="w-full"
             >
               {isSendTxPending || isWritePending || isConfirming ? 

@@ -302,7 +302,7 @@ const StepProcessModal = ({
             Shows the status of the transaction
           </DialogDescription>
           <div className="flex flex-col px-2 pt-3">
-            {steps.map((step, index) => (
+            {steps.map((step) => (
               <div
                 key={step.id}
                 className="flex items-center relative border-l-2 border-slate-300 pl-2 pb-6 last-of-type:pb-0"

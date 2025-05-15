@@ -11,7 +11,8 @@ export function walletClientToSigner(walletClient: WalletClient) {
     ensAddress: chain?.contracts?.ensRegistry?.address,
   };
   const provider = new BrowserProvider(transport, network);
-  const signer = new JsonRpcSigner(provider, account?.address!);
+  if (!account?.address) throw new Error("No account address available");
+  const signer = new JsonRpcSigner(provider, account.address);
   return signer;
 }
 

@@ -8,6 +8,7 @@ interface FormattedUnitsProps {
 }
 
 // Custom isString function implementation
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isString = (value: any): value is string => {
   return typeof value === 'string' || value instanceof String;
 };

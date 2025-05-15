@@ -1,7 +1,5 @@
 import { gql, request } from 'graphql-request';
-import { HypercertExchangeClient, ChainId } from "@hypercerts-org/marketplace-sdk";
-import { ethers, Signer } from 'ethers';
-import { Database } from './types';
+import { Database } from "./hypercerts-data-database";
 
 const endpoint = 'https://api.hypercerts.org/v1/graphql';
 

@@ -2,8 +2,7 @@ import { parseUnits } from "viem";
 // import { CONSTANTS } from "@hypercerts-org/sdk";
 // import { ENVIRONMENT } from "./constants";
 
-const HYPERCERT_API_URL =
-  "https://api.hypercerts.org";
+// const HYPERCERT_API_URL = "https://api.hypercerts.org";
 
 export const HYPERCERTS_API_URL_REST = `https://api.hypercerts.org/v1`;
 export const HYPERCERTS_API_URL_GRAPH = `https://api.hypercerts.org/v1/graphql`;
