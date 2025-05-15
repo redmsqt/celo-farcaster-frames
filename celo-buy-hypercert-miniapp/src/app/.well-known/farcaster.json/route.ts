@@ -5,10 +5,10 @@ export async function GET() {
   // You need to generate the accountAssociation payload and signature using this link:
 
   const config = {
-    accountAssociation: {
-      header: "",
-      payload: "",
-      signature: "",
+    "accountAssociation": {
+      "header": "eyJmaWQiOjEwMjQ1MjMsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHhjMTkwMjRCQzREQmI4Mjk3RjA2NzRhMmZBNTlkMEI0NDZBY0FCMTNhIn0",
+      "payload": "eyJkb21haW4iOiJjZWxvLWZhcmNhc3Rlci1mcmFtZXMtY2hpLnZlcmNlbC5hcHAifQ",
+      "signature": "MHgyNGUwMGE4ZWNiZjJiMjU0MzhmZTRjMzA1ZjkxNDEwODEzODM2MWVlZDBjOTZkNzcxNDIyOWVhNjNjMjIyY2UxNDMxNGUwNjFkY2I5MmNmNzM5YzUyNzRiNTE2MjRjMDA1ZjY2MzkyZDk1MWUxMWUwMTdjMDc1NjdjMWU4YjY5MjFi"
     },
     frame: {
       version: "1",
