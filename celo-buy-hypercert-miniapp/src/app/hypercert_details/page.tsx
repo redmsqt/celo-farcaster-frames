@@ -17,6 +17,7 @@ import {useRouter} from "next/navigation";
 import { useToast } from "~/hooks/use-toast";
 import { getHypercert } from "~/lib/getHypercert";
 import { useStore } from "~/components/buy-fractional-order-form";
+import { Dialog, DialogOverlay, DialogContent, DialogClose } from "~/components/ui/dialog";
 
 interface HypercertData {
   hypercert_id: string;
@@ -48,16 +49,9 @@ function clientToSigner(client: Client<Transport, Chain, Account>) {
   return signer;
 }
 
-async function getEthersSigner(
-  config: Config,
-  { chainId }: { chainId?: number } = {},
-) {
-  const client = await getConnectorClient(config, { chainId });
-  return clientToSigner(client);
-}
-
 export default function HypercertDetails() {
   const emitError = useStore((state: any) => state.error);
+  const emitHash = useStore((state: any) => state.hash);
   const router = useRouter();
   const { toast } = useToast();
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
@@ -98,6 +92,13 @@ export default function HypercertDetails() {
       setErrorMessage(emitError instanceof Error ? emitError.message : String(emitError));
     }
   }, [emitError]);
+
+  useEffect(() => {
+    if (emitHash) {
+      setTransactionHash(emitHash);
+      console.log("emitHash", emitHash)
+    }
+  }, [emitHash]);
 
   useEffect(() => {
     const fetchHypercert = async () => {
@@ -356,13 +357,11 @@ export default function HypercertDetails() {
                                   trigger={
                                     <button 
                                       className={`w-full py-3 font-medium rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200 ${
-                                        hypercert?.orders?.totalUnitsForSale && !isProcessing
+                                        hypercert?.orders?.totalUnitsForSale
                                           ? "bg-gradient-to-r from-teal-500 to-cyan-600 text-white hover:from-teal-600 hover:to-cyan-700" 
                                           : "bg-gray-300 text-gray-600 cursor-not-allowed"
                                       }`}
-                                      disabled={!hypercert?.orders?.totalUnitsForSale || isProcessing ||
-                                        !!activeOrderNonce ||
-                                        !!cancellingOrderNonce}
+                                      disabled={!hypercert?.orders?.totalUnitsForSale}
                                     >
                                       {isProcessing && !errorMessage ? (
                                         <div className="flex items-center justify-center">
@@ -422,17 +421,32 @@ export default function HypercertDetails() {
                 </svg>
                 <span className="font-medium">Purchase successful!</span>
               </div>
-              {transactionHash && (
-                <a
-                  href={`https://explorer.celo.org/mainnet/tx/${transactionHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-green-600 hover:text-green-800 underline mt-2 inline-block"
-                >
-                  View transaction
-                </a>
-              )}
-              <Link 
+              
+              {/* Display transaction hash from emitHash */}
+              {/* {(transactionHash || emitHash) && ( */}
+                <div className="mt-4 text-sm">
+                  {/* <p className="text-gray-700 mb-2">Transaction Hash:</p>
+                  <p className="text-gray-500 break-all font-mono text-xs bg-green-100 p-2 rounded">
+                    {transactionHash || emitHash}
+                  </p> */}
+                  <a
+                    href={`https://celo.blockscout.com/tx/${transactionHash || emitHash || ""}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center text-green-600 hover:text-green-800 font-medium"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                      <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                    </svg>
+                    View on Celo Explorer
+                  </a>
+                </div>
+              {/* )} */}
+              
+            </div>
+              <div className="mt-4">
+                <Link 
                   href="/"
                   className="text-center py-3 text-teal-600 hover:text-teal-800 font-medium transition-colors duration-200 flex items-center justify-center"
                 >
@@ -441,13 +455,13 @@ export default function HypercertDetails() {
                   </svg>
                   Back to Marketplace
                 </Link>
-            </div>
+              </div>
           </div>
         </div>
       )}
 
       {/* Error Modal */}
-      {errorMessage && (
+      {/* {errorMessage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative">
             <button 
@@ -467,7 +481,7 @@ export default function HypercertDetails() {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

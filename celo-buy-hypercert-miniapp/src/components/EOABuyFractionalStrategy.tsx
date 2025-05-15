@@ -10,6 +10,17 @@ import { BuyFractionalStrategy } from "../lib/BuyFractionalStrategy";
 import { MarketplaceOrder } from "../lib/types";
 import { getCurrencyByAddress } from "../lib/hypercerts-utils";
 import { ExtraContent } from "~/components/extra-content";
+import { create } from "zustand";
+
+interface StoreState {
+  hash: any;
+  emitHash: (newHash: any) => void;
+}
+
+export const useStore = create<StoreState>((set) => ({
+  hash: null,
+  emitHash: (newHash: any) => set({ hash: newHash }),
+}));
 
 const calculateBigIntPercentage = (
   numerator: bigint | string | null | undefined,
@@ -88,6 +99,7 @@ export class EOABuyFractionalStrategy extends BuyFractionalStrategy {
 
     let currency: Currency | undefined;
     let takerOrder: Taker;
+    
     try {
       await setStep("Setting up order execution");
       currency = getCurrencyByAddress(order.chainId, order.currency);
@@ -175,7 +187,6 @@ export class EOABuyFractionalStrategy extends BuyFractionalStrategy {
       await setStep("Setting up order execution");
       const overrides =
         currency.address === zeroAddress ? { value: totalPrice } : undefined;
-        console.log("got innnnn")
       const { call } = this.exchangeClient.executeOrder(
         order,
         takerOrder,
@@ -189,6 +200,7 @@ export class EOABuyFractionalStrategy extends BuyFractionalStrategy {
       const receipt = await waitForTransactionReceipt(this.walletClient.data, {
         hash: tx.hash as `0x${string}`,
       });
+      useStore.getState().emitHash(receipt);
       const chain = SUPPORTED_CHAINS.find((x) => x.id === order.chainId);
       await setStep("Awaiting confirmation", "completed");
       const message =
