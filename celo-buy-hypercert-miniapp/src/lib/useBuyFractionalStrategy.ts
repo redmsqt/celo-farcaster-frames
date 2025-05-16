@@ -1,7 +1,5 @@
 import { useAccount, useWalletClient } from "wagmi";
 import { useRouter } from "next/navigation";
-// import { create } from "zustand";
-// import { persist } from "zustand/middleware";
 import { useHypercertExchangeClient } from "./use-hypercert-exchange-client";
 import { useStepProcessDialogContext } from "./step-process-dialog";
 import { BuyFractionalStrategy } from "./BuyFractionalStrategy";

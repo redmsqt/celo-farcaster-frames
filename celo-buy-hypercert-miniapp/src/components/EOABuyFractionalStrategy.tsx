@@ -10,20 +10,8 @@ import { BuyFractionalStrategy } from "../lib/BuyFractionalStrategy";
 import { MarketplaceOrder } from "../lib/types";
 import { getCurrencyByAddress } from "../lib/hypercerts-utils";
 import { ExtraContent } from "~/components/extra-content";
-import { create } from "zustand";
+import { useStore } from "~/lib/account-store";
 
-interface StoreState {
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-  hash: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  emitHash: (newHash: any) => void;
-}
-
-export const useStore = create<StoreState>((set) => ({
-  hash: null,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  emitHash: (newHash: any) => set({ hash: newHash }),
-}));
 
 const calculateBigIntPercentage = (
   numerator: bigint | string | null | undefined,

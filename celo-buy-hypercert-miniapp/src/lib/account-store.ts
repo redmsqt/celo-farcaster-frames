@@ -33,3 +33,23 @@ export function selectWalletAccount(address: string) {
     },
   });
 }
+
+
+interface StoreState {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    hash: any;
+    error: null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    emitHash: (newHash: any) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    emitError: (newError: any) => void;
+  }
+
+export const useStore = create<StoreState>((set) => ({
+  error: null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  emitError: (newError: any) => set({ error: newError }),
+  hash: null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  emitHash: (newHash: any) => set({ hash: newHash }),
+}));

@@ -12,7 +12,7 @@ import { HypercertFull } from "~/lib/hypercert-full.fragment";
 // import {useRouter} from "next/navigation";
 import { useToast } from "~/hooks/use-toast";
 import { getHypercert } from "~/lib/getHypercert";
-import { useStore } from "~/components/buy-fractional-order-form";
+import { useStore } from "~/lib/account-store";
 
 export default function HypercertDetails() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,7 +30,7 @@ export default function HypercertDetails() {
   // const [unitsToBuy, setUnitsToBuy] = useState<number>(0);
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
-  const isProcessing = hypercert?.orders?.data?.[0].orderNonce === activeOrderNonce;
+  const isProcessing = hypercert?.orders?.data?.[0]?.orderNonce === activeOrderNonce;
   // const isCancelling = hypercert?.orders?.data?.[0].orderNonce === cancellingOrderNonce;
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -72,13 +72,8 @@ export default function HypercertDetails() {
       }
 
       try {
-        const data = await getHypercertById(id);
         const hypercert = await getHypercert(id);
-        if (data && Array.isArray(data) && data.length > 0) {
-          setHypercert(hypercert as HypercertFull);
-        } else {
-          setHypercert(hypercert as HypercertFull);
-        }
+        setHypercert(hypercert as HypercertFull);
       } catch (error) {
         console.error("Error fetching hypercert details:", error);
       } finally {
@@ -297,7 +292,7 @@ export default function HypercertDetails() {
                                   <span>{account.displayBalance ? ` (${account.displayBalance})` : ''}</span>
                                 </button>
                                 <BuyOrderDialog
-                                  order={hypercert?.orders?.data?.[0] as OrderFragment || undefined}
+                                  order={hypercert?.orders?.data?.[0] as OrderFragment || []}
                                   hypercert={hypercert as HypercertFull}
                                   isProcessing={isProcessing && !errorMessage}
                                   onBuyOrder={handleBuyOrder}

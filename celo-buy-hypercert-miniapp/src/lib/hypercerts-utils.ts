@@ -84,15 +84,15 @@ export const formatPrice = (
 export const orderFragmentToMarketplaceOrder = (
   order: OrderFragment,
 ): MarketplaceOrder => {
-  if (!order.chainId) {
-    throw new Error("Order does not have a chain ID");
+  if (!order || typeof order.chainId === undefined) {
+    throw new Error("Order does not have a valid chain ID");
   }
   return {
     signer: order.signer,
     price: order.price,
     itemIds: order.itemIds,
     strategyId: order.strategyId,
-    chainId: parseInt(order.chainId, 10),
+    chainId: order.chainId ? parseInt(order.chainId, 10) : 0,
     additionalParameters: order.additionalParameters,
     invalidated: order.invalidated,
     currency: order.currency,

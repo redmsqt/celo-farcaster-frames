@@ -34,12 +34,12 @@ export default function Hypercerts() {
     const load = async () => {
       const context = await sdk.context;
       setContext(context);
-      console.log("Farcaster SDK ready");
+      // console.log("Farcaster SDK ready");
       sdk.actions.ready({});
     };
 
     if (sdk && !isSDKLoaded) {
-      console.log("Loading Farcaster SDK");
+      // console.log("Loading Farcaster SDK");
       setIsSDKLoaded(true);
       load();
       return () => {

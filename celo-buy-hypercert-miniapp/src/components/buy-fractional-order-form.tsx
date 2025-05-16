@@ -25,13 +25,7 @@ import z from "zod";
 import { DEFAULT_NUM_UNITS, DEFAULT_NUM_UNITS_DECIMALS } from "~/lib/hypercerts";
 import { useBuyFractionalStrategy } from "~/lib/useBuyFractionalStrategy";
 import { useMutation } from "@tanstack/react-query";
-import { create } from "zustand";
-
-export const useStore = create((set) => ({
-  error: null,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  emitError: (newError: any) => set({ error: newError }),
-}));
+import { useStore } from "~/lib/account-store";
 
 export const useBuyFractionalMakerAsk = () => {
     const strategy = useBuyFractionalStrategy();
