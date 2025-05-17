@@ -1,7 +1,7 @@
 import { useAccount, useConnect } from 'wagmi';
 
 export function ConnectButton() {
-  const { connector: activeConnector, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const farcasterConnector = connectors[0]; // The Farcaster connector is the only one we added
 

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import sdk, { type Context } from "@farcaster/frame-sdk";
-import { getHypercertById } from "../../lib/graphqlQueries";
+// import { getHypercertById } from "../../lib/graphqlQueries";
 import Link from "next/link";
 import { BuyOrderDialog } from "~/components/buy-order-dialog";
 import { OrderFragment } from "~/lib/order.fragment";
