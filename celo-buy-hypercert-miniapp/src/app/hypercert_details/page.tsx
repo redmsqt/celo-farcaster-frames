@@ -30,7 +30,7 @@ export default function HypercertDetails() {
   // const [unitsToBuy, setUnitsToBuy] = useState<number>(0);
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
-  const isProcessing = hypercert?.orders?.data?.[0]?.orderNonce === activeOrderNonce;
+  const isProcessing = hypercert?.orders?.data?.length ? hypercert?.orders?.data?.[0]?.orderNonce === activeOrderNonce: false;
   // const isCancelling = hypercert?.orders?.data?.[0].orderNonce === cancellingOrderNonce;
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);

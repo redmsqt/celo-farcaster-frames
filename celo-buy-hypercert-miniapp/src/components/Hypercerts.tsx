@@ -1,11 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
-// import { HYPERCERTS_API_URL_GRAPH } from "@/configs/hypercerts";
 import Link from 'next/link';
 import { useEffect, useState } from "react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import sdk, { type Context } from "@farcaster/frame-sdk";
 import { getHypercerts, searchHypercerts } from "~/lib/graphqlQueries";
+import { ConnectButton } from './ConnectButton';
 
 interface Hypercert {
   id: string;
@@ -197,75 +196,7 @@ export default function Hypercerts() {
               Discover and invest in impact projects on Celo
             </p>
             <div className="mb-6 flex justify-center">
-            <ConnectButton.Custom>
-                  {({
-                    account,
-                    chain,
-                    openAccountModal,
-                    openChainModal,
-                    openConnectModal,
-                    mounted,
-                  }) => {
-                    const ready = mounted;
-                    const connected = ready && account && chain;
-
-                    return (
-                      <div
-                        {...(!ready && {
-                          'aria-hidden': true,
-                          style: {
-                            opacity: 0,
-                            pointerEvents: 'none',
-                            userSelect: 'none',
-                          },
-                        })}
-                        className="w-full"
-                      >
-                        {(() => {
-                          if (!connected) {
-                            return (
-                              <button
-                                onClick={openConnectModal}
-                                className="w-full py-3 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-medium rounded-xl shadow-sm hover:from-teal-600 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200"
-                              >
-                                Connect Wallet
-                              </button>
-                            );
-                          }
-
-                          if (chain.unsupported) {
-                            return (
-                              <button
-                                onClick={openChainModal}
-                                className="w-full py-3 bg-red-500 text-white font-medium rounded-xl shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200"
-                              >
-                                Switch to Celo
-                              </button>
-                            );
-                          }
-
-                          return (
-                            <div className="flex flex-col space-y-3">
-                              <button
-                                onClick={openAccountModal}
-                                className="flex items-center justify-center space-x-2 w-full py-3 bg-teal-100 text-teal-800 font-medium rounded-xl hover:bg-teal-200 transition-all duration-200"
-                              >
-                                <span>{account.displayName}</span>
-                                <span>{account.displayBalance ? ` (${account.displayBalance})` : ''}</span>
-                              </button>
-                              
-                              <button 
-                                className="w-full py-3 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-medium rounded-xl shadow-sm hover:from-teal-600 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200"
-                              >
-                                Buy Fractions
-                              </button>
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    );
-                  }}
-                </ConnectButton.Custom>
+              <ConnectButton />
             </div>
           </div>
 
