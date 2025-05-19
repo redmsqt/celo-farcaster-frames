@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from "react";
 import sdk, { type Context } from "@farcaster/frame-sdk";
 import { getHypercerts, searchHypercerts } from "~/lib/graphqlQueries";
-import { useAccount, useChainId } from 'wagmi';
+// import { useAccount, useChainId } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 interface Hypercert {
@@ -16,8 +16,8 @@ interface Hypercert {
 }
 
 export default function Hypercerts() {
-  const { isConnected, address } = useAccount();
-  const chainId = useChainId();
+  // const { isConnected, address } = useAccount();
+  // const chainId = useChainId();
   const [hypercerts, setHypercerts] = useState<Hypercert[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
