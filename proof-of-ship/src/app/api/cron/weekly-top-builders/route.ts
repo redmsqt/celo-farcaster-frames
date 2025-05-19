@@ -1,11 +1,15 @@
 import { prisma } from "~/lib/db";
 import dayjs from "dayjs";
-// import type { BuilderProfile } from "../../../../../generated/prisma";
 import utc from "dayjs/plugin/utc";
+import { ethers } from "ethers";
+import BuilderTokenArtifact from "../../../../contracts/SHIPRToken.json";
 
 dayjs.extend(utc);
 
+const BUILDER_TOKEN_ADDRESS = "0x8fE0F1B750eF84024FAb4E6FFd8bB03488f0FADF";
+
 export async function GET(request: Request) {
+  console.log("Weekly top builders cron job started");
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return new Response("Unauthorized", { status: 401 });
@@ -47,14 +51,37 @@ async function storeWeeklyTopBuilders() {
     });
 
     const storedBuilders = await prisma.weeklyTopBuilder.createMany({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      data: topBuilders.map((builder: any, index: number) => ({
-        wallet: builder.wallet,
-        talentScore: builder.talentScore || 0,
-        rank: index + 1,
-        weekStart,
-      })),
+      data: topBuilders.map(
+        (
+          builder: { wallet: string; talentScore: number | null },
+          index: number
+        ) => ({
+          wallet: builder.wallet,
+          talentScore: builder.talentScore || 0,
+          rank: index + 1,
+          weekStart,
+        })
+      ),
     });
+
+    // Distribute tokens to top builders
+    if (process.env.PRIVATE_KEY) {
+      const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
+      const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+      const builderToken = new ethers.Contract(
+        BUILDER_TOKEN_ADDRESS,
+        BuilderTokenArtifact.abi,
+        wallet
+      );
+
+      const builderAddresses = topBuilders.map((builder) => builder.wallet);
+      const tx = await builderToken.distributeTopBuilderRewards(
+        builderAddresses
+      );
+      await tx.wait();
+
+      console.log("Tokens distributed to top builders:", tx.hash);
+    }
 
     return { success: true, count: storedBuilders.count };
   } catch (error) {

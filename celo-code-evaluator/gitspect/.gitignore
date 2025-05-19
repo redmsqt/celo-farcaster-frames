@@ -33,18 +33,9 @@ yarn-error.log*
 .env*
 !.env.example
 
-# generated folders
-**/generated/
-
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-.vercel
-artifacts
-cache
-typechain
-typechain-types
