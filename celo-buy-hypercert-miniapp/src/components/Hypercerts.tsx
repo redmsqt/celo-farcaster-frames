@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useEffect, useState } from "react";
 import sdk, { type Context } from "@farcaster/frame-sdk";
 import { getHypercerts, searchHypercerts } from "~/lib/graphqlQueries";
-import { ConnectButton } from './ConnectButton';
+import { useAccount, useChainId } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 interface Hypercert {
   id: string;
@@ -15,10 +16,12 @@ interface Hypercert {
 }
 
 export default function Hypercerts() {
+  const { isConnected, address } = useAccount();
+  const chainId = useChainId();
   const [hypercerts, setHypercerts] = useState<Hypercert[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
-  const [context, setContext] = useState<Context.FrameContext>();
+  const [context, setContext] = useState<Context.FrameContext | undefined>(undefined); // Added undefined to type
   const appUrl = process.env.NEXT_PUBLIC_URL;
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
@@ -196,7 +199,69 @@ export default function Hypercerts() {
               Discover and invest in impact projects on Celo
             </p>
             <div className="mb-6 flex justify-center">
-              <ConnectButton />
+            <ConnectButton.Custom>
+                    {({
+                      account,
+                      chain,
+                      openAccountModal,
+                      openChainModal,
+                      openConnectModal,
+                      mounted,
+                    }) => {
+                      const ready = mounted;
+                      const connected = ready && account && chain;
+
+                      return (
+                        <div
+                          {...(!ready && {
+                            'aria-hidden': true,
+                            style: {
+                              opacity: 0,
+                              pointerEvents: 'none',
+                              userSelect: 'none',
+                            },
+                          })}
+                          className="w-full"
+                        >
+                          {(() => {
+                            if (!connected) {
+                              return (
+                                <button
+                                  onClick={openConnectModal}
+                                  className="w-full py-3 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-medium rounded-xl shadow-sm hover:from-teal-600 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200"
+                                >
+                                  Connect Wallet
+                                </button>
+                              );
+                            }
+
+                            if (chain.unsupported) {
+                              return (
+                                <button
+                                  onClick={openChainModal}
+                                  className="w-full py-3 bg-red-500 text-white font-medium rounded-xl shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200"
+                                >
+                                  Switch to Celo
+                                </button>
+                              );
+                            }
+
+                            return (
+                              <div className="flex flex-col space-y-3">
+                                <button
+                                  onClick={openAccountModal}
+                                  className="flex items-center justify-center space-x-2 w-full py-3 bg-teal-100 text-teal-800 font-medium rounded-xl hover:bg-teal-200 transition-all duration-200"
+                                >
+                                  <span>{account.displayName}</span>
+                                  <span>{account.displayBalance ? ` (${account.displayBalance})` : ''}</span>
+                                </button>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      );
+                    }}
+                  </ConnectButton.Custom>
             </div>
           </div>
 
