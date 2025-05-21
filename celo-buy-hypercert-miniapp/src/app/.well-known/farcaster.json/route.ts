@@ -15,7 +15,7 @@ export async function GET() {
       name: "Celo Hypercerts Marketplace",
       iconUrl: `${appUrl}/icon.png`,
       homeUrl: appUrl,
-      imageUrl: `${appUrl}/tipme.png`,
+      imageUrl: `${appUrl}/hypercert-img-url.png`,
       buttonTitle: "Launch Frame",
       splashImageUrl: `${appUrl}/celosplash.png`,
       splashBackgroundColor: "#EDFDFC",
