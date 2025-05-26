@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Clock } from "lucide-react";
 import { Badge } from "./ui/badge";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -46,9 +45,14 @@ export default function Countdown() {
   }, []);
 
   return (
-    <Badge variant="default" className="bg-blue-500 hover:bg-blue-500">
-      <Clock className="w-3 h-3 mr-1.5" />
-      {timeLeft}
+    <Badge
+      variant="default"
+      className="bg-purple-400 hover:bg-purple-400 flex flex-col items-center rounded-full px-4 py-1 min-w-[120px]"
+    >
+      <span className="text-[11px] text-white/90">Round ends in</span>
+      <span className="text-xs font-semibold text-white leading-tight">
+        {timeLeft}
+      </span>
     </Badge>
   );
 }

@@ -10,7 +10,7 @@ export async function GET() {
         },
       },
       orderBy: {
-        talentScore: "desc",
+        totalScore: "desc",
       },
       take: 40,
     });

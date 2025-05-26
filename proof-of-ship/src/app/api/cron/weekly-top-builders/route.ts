@@ -34,7 +34,7 @@ async function storeWeeklyTopBuilders() {
     const now = dayjs.utc();
     const weekStart = now.startOf("week").toDate();
 
-    // Get top 10 builders by talent score
+    // Get top 40 builders by talent score
     const topBuilders = await prisma.builderProfile.findMany({
       orderBy: {
         talentScore: "desc",
@@ -109,8 +109,6 @@ async function storeWeeklyTopBuilders() {
       // Submit referral to Divvi
       const chainId = await provider.getNetwork().then((n) => n.chainId);
       await submitDivviReferral(tx.hash as `0x${string}`, Number(chainId));
-
-      console.log("Tokens distributed to top builders:", tx.hash);
     }
 
     return { success: true, count: storedBuilders.count };

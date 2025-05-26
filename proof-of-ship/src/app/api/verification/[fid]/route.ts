@@ -3,20 +3,20 @@ import { prisma } from "~/lib/db";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ address: string }> }
+  { params }: { params: Promise<{ fid: string }> }
 ) {
-  const { address } = await params;
+  const { fid } = await params;
 
-  if (!address) {
+  if (!fid) {
     return NextResponse.json(
-      { error: "Address parameter is required" },
+      { error: "FID parameter is required" },
       { status: 400 }
     );
   }
 
   try {
     const builder = await prisma.builderProfile.findUnique({
-      where: { wallet: address },
+      where: { fid: fid },
       select: { isVerified: true },
     });
     if (!builder) {

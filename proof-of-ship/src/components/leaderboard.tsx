@@ -3,10 +3,8 @@ import type { BuilderScore } from "~/types";
 import LeaderboardItem from "./leaderboard-item";
 
 export default function Leaderboard({
-  isVerified,
   builderScore,
 }: {
-  isVerified: boolean;
   builderScore: number;
 }) {
   const [builders, setBuilders] = useState<BuilderScore[]>([]);
@@ -38,7 +36,7 @@ export default function Leaderboard({
     };
 
     fetchLeaderboard();
-  }, [isVerified, builderScore]);
+  }, [builderScore]);
 
   const renderContent = () => {
     if (isLoading) {
@@ -74,7 +72,7 @@ export default function Leaderboard({
     return (
       <div className="space-y-4 h-[400px] overflow-y-auto">
         {builders.map((builder, index) => (
-          <LeaderboardItem key={builder.id} builder={builder} index={index} />
+          <LeaderboardItem key={builder.fid} builder={builder} index={index} />
         ))}
       </div>
     );

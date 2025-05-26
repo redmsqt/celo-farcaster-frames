@@ -2,11 +2,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import sdk, { type Context } from "@farcaster/frame-sdk";
 import { createStore } from "mipd";
-import { useAccount } from "wagmi";
-import SelfQRcodeWrapper, { SelfAppBuilder } from "@selfxyz/qrcode";
+import { useAccount, useConnect } from "wagmi";
+import { getUniversalLink, SelfAppBuilder } from "@selfxyz/core";
+import SelfQRcodeWrapper from "@selfxyz/qrcode";
+import { CheckCircle2 } from "lucide-react";
 import Leaderboard from "./leaderboard";
 import UserScore from "./user-score";
 import Countdown from "./countdown";
@@ -14,7 +15,8 @@ import { useVerification } from "~/hooks/useVerification";
 import { useBuilderScore } from "~/hooks/useBuilderScore";
 import { Londrina_Solid } from "next/font/google";
 import RewardTiers from "./reward-tiers";
-
+import { Button } from "./ui/button";
+import Information from "./information";
 const londrina = Londrina_Solid({
   weight: "400",
   subsets: ["latin"],
@@ -24,24 +26,34 @@ const londrina = Londrina_Solid({
 export default function Dashboard() {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
   const [context, setContext] = useState<Context.FrameContext>();
+
+  const { address, isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const [userFid, setUserFid] = useState<number | undefined>();
+  const [user, setUser] = useState<Context.UserContext | undefined>();
   const {
     isVerified,
     setIsVerified,
     isLoading: isVerificationLoading,
-  } = useVerification();
-  const { address } = useAccount();
+  } = useVerification(userFid);
   const {
     builderScore,
     rank,
     mutate: refetchBuilderScore,
     isLoadingScore,
-  } = useBuilderScore(isVerified);
+  } = useBuilderScore();
 
   useEffect(() => {
     const load = async () => {
       const context = await sdk.context;
+      const user = context.user;
+      setUserFid(user?.fid);
+      setUser(user);
       setContext(context);
       sdk.actions.ready({});
+      if (user?.fid) {
+        refetchBuilderScore(user);
+      }
 
       // Set up a MIPD Store, and request Providers.
       const store = createStore();
@@ -60,12 +72,6 @@ export default function Dashboard() {
     }
   }, [isSDKLoaded]);
 
-  useEffect(() => {
-    if (isVerified) {
-      refetchBuilderScore();
-    }
-  }, [isVerified, refetchBuilderScore]);
-
   const selfApp = address
     ? new SelfAppBuilder({
         appName: "Weekly builder rewards",
@@ -74,9 +80,40 @@ export default function Dashboard() {
         userId: address,
         userIdType: "hex",
         endpointType: "https",
+        logoBase64: "https://your-logo-url.png",
       }).build()
     : null;
-  console.log("selfApp", selfApp);
+
+  const deeplink = selfApp ? getUniversalLink(selfApp) : null;
+
+  const handleMobileDeeplink = async () => {
+    if (deeplink) {
+      try {
+        window.location.href = deeplink;
+        const handleReturn = async () => {
+          if (userFid) {
+            try {
+              const response = await fetch(`/api/builder-score/${userFid}`, {
+                method: "PUT",
+              });
+
+              if (response.ok) {
+                await refetchBuilderScore(user);
+                setIsVerified(true);
+              }
+            } catch (error) {
+              console.error("Error updating score:", error);
+            }
+          }
+        };
+
+        // Listen for the return from the Self app
+        window.addEventListener("focus", handleReturn, { once: true });
+      } catch (error) {
+        console.error("Error handling deeplink:", error);
+      }
+    }
+  };
 
   const renderContent = () => {
     if (!isSDKLoaded) {
@@ -90,21 +127,19 @@ export default function Dashboard() {
       );
     }
 
-    if (!address) {
+    if (!isConnected) {
       return (
-        <div className="flex items-center justify-center h-[600px]">
-          <ConnectButton />
-        </div>
-      );
-    }
-
-    if (isVerificationLoading) {
-      return (
-        <div className="flex flex-col items-center justify-center h-[600px]">
-          <span className="loader mb-4" />
-          <div className="text-white text-lg font-semibold animate-pulse">
-            Checking verification status...
-          </div>
+        <div className="flex flex-col items-center justify-center h-[600px] gap-4">
+          <h2 className="text-2xl font-bold text-white">
+            Connect Your Farcaster Wallet
+          </h2>
+          <p className="text-gray-300 text-center max-w-xs mb-4">
+            Use the Farcaster Frame wallet to connect and participate in the
+            Weekly Builder Rewards
+          </p>
+          <Button onClick={() => connect({ connector: connectors[0] })}>
+            Connect
+          </Button>
         </div>
       );
     }
@@ -112,37 +147,12 @@ export default function Dashboard() {
     return (
       <div className="w-full max-w-md mx-auto py-8 px-6 bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 relative min-h-[600px]">
         <h1
-          className={`text-3xl font-bold text-center text-white ${londrina.className} mb-8`}
+          className={`text-2xl font-bold text-center text-white ${londrina.className} mb-8`}
         >
           Weekly Builder Rewards
         </h1>
         <div className="flex flex-col items-center">
-          {!isVerified && !isVerificationLoading && selfApp && (
-            <div className="flex flex-col items-center">
-              <h2 className="text-2xl font-bold mb-2 text-white drop-shadow">
-                Verify Your Identity
-              </h2>
-              <p className="mb-4 text-gray-200 text-center max-w-xs">
-                Scan the QR code with your Self app to verify your identity
-              </p>
-              <div className="p-3 rounded-2xl bg-white/20 border border-white/30 shadow-lg animate-pulse-slow">
-                <SelfQRcodeWrapper
-                  selfApp={selfApp}
-                  onSuccess={async () => {
-                    await fetch(`/api/builder-score/${address}`, {
-                      method: "POST",
-                    });
-                    setIsVerified(true);
-                    if (address) {
-                      await refetchBuilderScore();
-                    }
-                  }}
-                  size={300}
-                />
-              </div>
-            </div>
-          )}
-          {isVerified && (
+          {
             <>
               {builderScore && builderScore < 40 ? (
                 <UserScore
@@ -157,16 +167,34 @@ export default function Dashboard() {
                   isLoading={isLoadingScore}
                 />
               )}
+              {deeplink && (
+                <div className="w-full flex items-center justify-between bg-white/5 p-4 rounded-lg mb-4">
+                  <div className="flex-col text-white text-left text-base leading-tight">
+                    Verify with self.xyz
+                    <br />& earn +25 points
+                  </div>
+                  <div className="flex items-center justify-center">
+                    {isVerified ? (
+                      <CheckCircle2 className="w-6 h-6 text-green-500" />
+                    ) : (
+                      <Button
+                        onClick={handleMobileDeeplink}
+                        className="bg-purple-400 hover:bg-purple-500 text-xs px-1 py-1 rounded-sm text-white shadow-md transition-colors duration-200"
+                      >
+                        Verify Now
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="flex flex-row items-center justify-between gap-4 mb-4">
                 <RewardTiers />
                 <Countdown />
+                <Information />
               </div>
-              <Leaderboard
-                isVerified={isVerified}
-                builderScore={builderScore || 0}
-              />
+              <Leaderboard builderScore={builderScore || 0} />
             </>
-          )}
+          }
         </div>
       </div>
     );
