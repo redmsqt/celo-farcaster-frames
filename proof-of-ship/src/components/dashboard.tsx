@@ -6,7 +6,6 @@ import sdk, { type Context } from "@farcaster/frame-sdk";
 import { createStore } from "mipd";
 import { useAccount, useConnect } from "wagmi";
 import { getUniversalLink, SelfAppBuilder } from "@selfxyz/core";
-import SelfQRcodeWrapper from "@selfxyz/qrcode";
 import { CheckCircle2 } from "lucide-react";
 import Leaderboard from "./leaderboard";
 import UserScore from "./user-score";
@@ -31,11 +30,7 @@ export default function Dashboard() {
   const { connect, connectors } = useConnect();
   const [userFid, setUserFid] = useState<number | undefined>();
   const [user, setUser] = useState<Context.UserContext | undefined>();
-  const {
-    isVerified,
-    setIsVerified,
-    isLoading: isVerificationLoading,
-  } = useVerification(userFid);
+  const { isVerified, setIsVerified } = useVerification(userFid);
   const {
     builderScore,
     rank,
