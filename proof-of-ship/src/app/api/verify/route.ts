@@ -14,7 +14,9 @@ export async function POST(req: NextRequest) {
       }
 
       const userId = await getUserIdentifier(publicSignals);
+      console.log("userId", userId);
       const decimalValue = parseInt(userId, 16);
+      console.log("decimalValue", decimalValue);
       // Get the current URL from the request
       const url = new URL(req.url);
       const baseUrl = `${url.protocol}//${url.host}`;

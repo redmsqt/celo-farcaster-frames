@@ -64,12 +64,15 @@ export default function Dashboard() {
     }
   }, [isSDKLoaded]);
 
+  const userId = userFid ? `0x${userFid.toString(16)}` : undefined;
+  console.log("userId", userId);
+
   const selfApp = address
     ? new SelfAppBuilder({
         appName: "Shipper",
         scope: "proof-of-ship-scope",
         endpoint: `${window.location.origin}/api/verify`,
-        userId: userFid ? `0x${userFid.toString(16)}` : undefined,
+        userId,
         userIdType: "hex",
         endpointType: "https",
         logoBase64: "https://your-logo-url.png",
