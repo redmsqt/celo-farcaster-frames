@@ -28,8 +28,7 @@ export default function Dashboard() {
 
   const { address } = useAccount();
   const [userFid, setUserFid] = useState<number | undefined>();
-  const [user, setUser] = useState<Context.UserContext | undefined>();
-  const { isVerified, setIsVerified } = useVerification(userFid);
+  const { isVerified } = useVerification(userFid);
   const {
     builderScore,
     rank,
@@ -42,7 +41,6 @@ export default function Dashboard() {
       const context = await sdk.context;
       const user = context.user;
       setUserFid(user?.fid);
-      setUser(user);
       setContext(context);
       sdk.actions.ready({});
       if (user?.fid) {
