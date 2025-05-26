@@ -53,7 +53,8 @@ export default function UserScore({
           >
             Talent Protocol
           </a>
-          .
+          .Please make sure you have connected your Farcaster account with
+          Talent Protocol.
         </AlertDescription>
       </Alert>
     );
