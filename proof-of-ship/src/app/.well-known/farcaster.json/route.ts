@@ -15,7 +15,7 @@ export async function GET() {
     },
     frame: {
       version: "1",
-      name: "Weekly builder rewards",
+      name: "Shipper",
       iconUrl: `${appUrl}/splash.png`,
       homeUrl: appUrl,
       imageUrl: `${appUrl}/splash.png`,
