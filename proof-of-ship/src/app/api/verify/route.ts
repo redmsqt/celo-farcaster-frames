@@ -14,6 +14,10 @@ export async function POST(req: NextRequest) {
       }
 
       const userId = await getUserIdentifier(publicSignals);
+      // Convert hex to string by removing '0x' prefix and parsing as integer
+      const formattedUserId = userId.startsWith("0x")
+        ? parseInt(userId.slice(2), 16).toString()
+        : userId;
 
       // Get the current URL from the request
       const url = new URL(req.url);
@@ -23,7 +27,8 @@ export async function POST(req: NextRequest) {
       const selfBackendVerifier = new SelfBackendVerifier(
         "proof-of-ship-scope",
         `${baseUrl}/api/verify`,
-        "hex"
+        "hex",
+        true
       );
 
       // Verify the proof
@@ -31,7 +36,26 @@ export async function POST(req: NextRequest) {
       console.log("result", result);
 
       if (result.isValid) {
-        console.log("userId", userId);
+        console.log("userId", formattedUserId);
+
+        try {
+          const builderScoreResponse = await fetch(
+            `${baseUrl}/api/builder-score/${formattedUserId}`,
+            {
+              method: "PUT",
+            }
+          );
+          console.log("builderScoreResponse", builderScoreResponse);
+          if (!builderScoreResponse.ok) {
+            console.error(
+              "Failed to update builder score:",
+              await builderScoreResponse.text()
+            );
+          }
+        } catch (error) {
+          console.error("Error updating builder score:", error);
+        }
+
         return NextResponse.json(
           {
             status: "success",

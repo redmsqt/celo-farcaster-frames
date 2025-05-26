@@ -71,7 +71,7 @@ export default function Dashboard() {
         appName: "Shipper",
         scope: "proof-of-ship-scope",
         endpoint: `${window.location.origin}/api/verify`,
-        userId: address,
+        userId: userFid ? `0x${userFid.toString(16)}` : undefined,
         userIdType: "hex",
         endpointType: "https",
         logoBase64: "https://your-logo-url.png",
@@ -84,25 +84,25 @@ export default function Dashboard() {
     if (deeplink) {
       try {
         window.location.href = deeplink;
-        const handleReturn = async () => {
-          if (userFid) {
-            try {
-              const response = await fetch(`/api/builder-score/${userFid}`, {
-                method: "PUT",
-              });
+        // const handleReturn = async () => {
+        //   if (userFid) {
+        //     try {
+        //       const response = await fetch(`/api/builder-score/${userFid}`, {
+        //         method: "PUT",
+        //       });
 
-              if (response.ok) {
-                await refetchBuilderScore(user!);
-                setIsVerified(true);
-              }
-            } catch (error) {
-              console.error("Error updating score:", error);
-            }
-          }
-        };
+        //       if (response.ok) {
+        //         await refetchBuilderScore(user!);
+        //         setIsVerified(true);
+        //       }
+        //     } catch (error) {
+        //       console.error("Error updating score:", error);
+        //     }
+        //   }
+        // };
 
-        // Listen for the return from the Self app
-        window.addEventListener("focus", handleReturn, { once: true });
+        // // Listen for the return from the Self app
+        // window.addEventListener("focus", handleReturn, { once: true });
       } catch (error) {
         console.error("Error handling deeplink:", error);
       }
