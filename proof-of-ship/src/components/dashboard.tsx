@@ -68,7 +68,7 @@ export default function Dashboard() {
 
   const selfApp = address
     ? new SelfAppBuilder({
-        appName: "Weekly builder rewards",
+        appName: "Shipper",
         scope: "proof-of-ship-scope",
         endpoint: `${window.location.origin}/api/verify`,
         userId: address,
@@ -126,7 +126,7 @@ export default function Dashboard() {
         <h1
           className={`text-2xl font-bold text-center text-white ${londrina.className} mb-8`}
         >
-          Weekly Builder Rewards
+          SHIPPER
         </h1>
         <div className="flex flex-col items-center">
           {
@@ -169,7 +169,9 @@ export default function Dashboard() {
                 <Countdown />
                 <Information />
               </div>
-              <Leaderboard builderScore={builderScore || 0} />
+              {!isLoadingScore && (
+                <Leaderboard builderScore={builderScore || 0} />
+              )}
             </>
           }
         </div>

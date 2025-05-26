@@ -3,6 +3,7 @@ import type { BuilderScore } from "~/types";
 import Avatar from "~/components/avatar";
 import { mainnet } from "wagmi/chains";
 import Image from "next/image";
+import { Badge } from "~/components/ui/badge";
 
 interface LeaderboardItemProps {
   builder: BuilderScore;
@@ -39,11 +40,16 @@ export default function LeaderboardItem({
               ensName ||
               `${builder.fid.slice(0, 6)}...${builder.fid.slice(-4)}`}
           </div>
-          <div className="text-right">
-            {builder.totalScore != null
-              ? builder.totalScore.toLocaleString()
-              : "-"}
-          </div>
+          <Badge
+            variant="secondary"
+            className="rounded-full bg-purple-400/60 text-white px-3 py-1 w-fit shadow"
+          >
+            <span>
+              {builder.totalScore != null
+                ? builder.totalScore.toLocaleString()
+                : "-"}
+            </span>
+          </Badge>
         </div>
       </div>
       <div className="text-xl font-bold">#{index + 1}</div>
