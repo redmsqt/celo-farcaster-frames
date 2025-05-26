@@ -121,23 +121,6 @@ export default function Dashboard() {
       );
     }
 
-    if (!isConnected) {
-      return (
-        <div className="flex flex-col items-center justify-center h-[600px] gap-4">
-          <h2 className="text-2xl font-bold text-white">
-            Connect Your Farcaster Wallet
-          </h2>
-          <p className="text-gray-300 text-center max-w-xs mb-4">
-            Use the Farcaster Frame wallet to connect and participate in the
-            Weekly Builder Rewards
-          </p>
-          <Button onClick={() => connect({ connector: connectors[0] })}>
-            Connect
-          </Button>
-        </div>
-      );
-    }
-
     return (
       <div className="w-full max-w-md mx-auto py-8 px-6 bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 relative min-h-[600px]">
         <h1
