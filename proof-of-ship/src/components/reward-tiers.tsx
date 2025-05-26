@@ -12,33 +12,12 @@ export default function RewardTiers() {
   return (
     <>
       <button
-        className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 shadow text-white"
+        className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 shadow text-white"
         onClick={() => setOpen(true)}
         aria-label="Show reward tiers"
         type="button"
       >
-        {/* Gift Icon SVG */}
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-6 h-6"
-        >
-          <title>Gift Icon</title>
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 8V6.75A2.25 2.25 0 1 0 9.75 4.5c0 1.24 1.01 2.25 2.25 2.25zm0 0V6.75A2.25 2.25 0 1 1 14.25 4.5c0 1.24-1.01 2.25-2.25 2.25z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3 9.75A2.25 2.25 0 0 1 5.25 7.5h13.5A2.25 2.25 0 0 1 21 9.75v1.5a.75.75 0 0 1-.75.75H3.75A.75.75 0 0 1 3 11.25v-1.5zM3.75 12v6.75A2.25 2.25 0 0 0 6 21h12a2.25 2.25 0 0 0 2.25-2.25V12"
-          />
-        </svg>
-        <span className="font-semibold">Reward Tiers</span>
+        <span className="font-semibold text-xs">Reward Tiers</span>
       </button>
       {open && (
         <div

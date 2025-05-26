@@ -29,8 +29,8 @@ export default function UserScore({
 
   if (isLoading) {
     return (
-      <Alert className="bg-orange-400 text-white border-none rounded-xl px-3 py-3 font-semibold shadow-md mb-4 w-full max-w-xl mx-auto flex items-center animate-pulse">
-        <AlertTitle className="bg-orange-500 rounded-lg px-4 py-2 font-bold text-3xl flex items-center justify-center mr-3 mb-0 w-16 h-12">
+      <Alert className="bg-purple-500 text-white border-none rounded-xl px-3 py-3 font-semibold shadow-md mb-4 w-full max-w-xl mx-auto flex items-center animate-pulse">
+        <AlertTitle className="bg-purple-500 rounded-lg px-4 py-2 font-bold text-3xl flex items-center justify-center mr-3 mb-0 w-16 h-12">
           &nbsp;
         </AlertTitle>
         <AlertDescription className="text-base font-medium break-words w-48 h-6">
@@ -42,8 +42,8 @@ export default function UserScore({
 
   if (score < 40) {
     return (
-      <Alert className="bg-orange-400 text-white border-none rounded-xl px-3 py-3 font-semibold shadow-md mb-4 w-full max-w-xl mx-auto flex items-center">
-        <AlertDescription className="text-base font-medium break-words">
+      <Alert className="bg-purple-600 text-white border-none rounded-xl px-2 py-2 font-semibold shadow-md mb-4 w-full max-w-xl mx-auto flex items-center">
+        <AlertDescription className="text-sm font-medium break-words">
           Your score is below 40. Please update your profile on{" "}
           <a
             href="https://talentprotocol.com/"
@@ -60,11 +60,11 @@ export default function UserScore({
   }
 
   return (
-    <Alert className="bg-orange-400 text-white border-none rounded-xl px-3 py-3 font-semibold shadow-md mb-4 w-full max-w-xl mx-auto flex items-center">
-      <AlertTitle className="bg-orange-500 rounded-lg px-4 py-2 font-bold text-3xl flex items-center justify-center mr-3 mb-0">
+    <Alert className="bg-purple-500 text-white border-none rounded-xl px-2 py-2 font-semibold shadow-md mb-4 w-full max-w-xl mx-auto flex items-center">
+      <AlertTitle className="bg-purple-500 rounded-lg px-4 py-2 font-bold text-3xl flex items-center justify-center mr-3 mb-0">
         #{rank}
       </AlertTitle>
-      <AlertDescription className="text-base font-medium break-words">
+      <AlertDescription className="text-sm font-medium break-words">
         {levelDescription && <div className="mb-2">{levelDescription}</div>}
       </AlertDescription>
     </Alert>

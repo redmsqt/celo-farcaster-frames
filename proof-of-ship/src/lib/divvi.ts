@@ -52,7 +52,6 @@ export const submitDivviReferral = async (
       txHash,
       chainId,
     });
-    console.log("Successfully submitted referral to Divvi:", txHash);
   } catch (error) {
     console.error("Failed to submit referral to Divvi:", error);
     throw error;
