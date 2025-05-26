@@ -14,11 +14,7 @@ export async function POST(req: NextRequest) {
       }
 
       const userId = await getUserIdentifier(publicSignals);
-      // Convert hex to string using BigInt for accurate conversion
-      const formattedUserId = userId.startsWith("0x")
-        ? BigInt(userId).toString()
-        : userId;
-
+      const decimalValue = parseInt(userId, 16);
       // Get the current URL from the request
       const url = new URL(req.url);
       const baseUrl = `${url.protocol}//${url.host}`;
@@ -36,11 +32,11 @@ export async function POST(req: NextRequest) {
       console.log("result", result);
 
       if (result.isValid) {
-        console.log("userId", formattedUserId);
+        // console.log("userId", formattedUserId);
 
         try {
           const builderScoreResponse = await fetch(
-            `${baseUrl}/api/builder-score/${formattedUserId}`,
+            `${baseUrl}/api/builder-score/${decimalValue}`,
             {
               method: "PUT",
             }
