@@ -1,4 +1,4 @@
-import { getUserIdentifier, SelfBackendVerifier } from "@selfxyz/core";
+import { SelfBackendVerifier } from "@selfxyz/core";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const userId = await getUserIdentifier(publicSignals);
+      //const userId = await getUserIdentifier(publicSignals);
       // Get the current URL from the request
       const url = new URL(req.url);
       const baseUrl = `${url.protocol}//${url.host}`;
