@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import sdk, { type Context } from "@farcaster/frame-sdk";
 import { createStore } from "mipd";
-import { useAccount, useConnect } from "wagmi";
+import { useAccount } from "wagmi";
 import { getUniversalLink, SelfAppBuilder } from "@selfxyz/core";
 import { CheckCircle2 } from "lucide-react";
 import Leaderboard from "./leaderboard";
@@ -90,6 +90,7 @@ export default function Dashboard() {
               const response = await fetch(`/api/builder-score/${userFid}`, {
                 method: "PUT",
               });
+
               if (response.ok) {
                 await refetchBuilderScore(user!);
                 setIsVerified(true);
