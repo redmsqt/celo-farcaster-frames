@@ -91,9 +91,8 @@ export default function Dashboard() {
               const response = await fetch(`/api/builder-score/${userFid}`, {
                 method: "PUT",
               });
-
               if (response.ok) {
-                await refetchBuilderScore(user);
+                await refetchBuilderScore(user!);
                 setIsVerified(true);
               }
             } catch (error) {
