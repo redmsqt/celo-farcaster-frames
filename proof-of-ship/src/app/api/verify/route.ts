@@ -12,9 +12,6 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
-
-      //const userId = await getUserIdentifier(publicSignals);
-      // Get the current URL from the request
       const url = new URL(req.url);
       const baseUrl = `${url.protocol}//${url.host}`;
       console.log("baseUrl", baseUrl);
@@ -22,7 +19,8 @@ export async function POST(req: NextRequest) {
       const selfBackendVerifier = new SelfBackendVerifier(
         "proof-of-ship-scope",
         `${baseUrl}/api/verify`,
-        "hex"
+        "hex",
+        true
       );
 
       // Verify the proof
@@ -32,8 +30,6 @@ export async function POST(req: NextRequest) {
       console.log("decimalValue", userIdDecimal);
 
       if (result.isValid) {
-        // console.log("userId", formattedUserId);
-
         try {
           const builderScoreResponse = await fetch(
             `${baseUrl}/api/builder-score/${userIdDecimal}`,
