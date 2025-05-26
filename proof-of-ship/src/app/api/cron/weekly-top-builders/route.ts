@@ -54,11 +54,11 @@ async function storeWeeklyTopBuilders() {
     const storedBuilders = await prisma.weeklyTopBuilder.createMany({
       data: topBuilders.map(
         (
-          builder: { wallet: string; talentScore: number | null },
+          builder: { wallet: string | null; totalScore: number | null },
           index: number
         ) => ({
-          wallet: builder.wallet,
-          talentScore: builder.talentScore || 0,
+          wallet: builder.wallet || "",
+          talentScore: builder.totalScore || 0,
           rank: index + 1,
           weekStart,
         })
