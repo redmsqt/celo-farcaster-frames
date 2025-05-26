@@ -26,8 +26,7 @@ export default function Dashboard() {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
   const [context, setContext] = useState<Context.FrameContext>();
 
-  const { address, isConnected } = useAccount();
-  const { connect, connectors } = useConnect();
+  const { address } = useAccount();
   const [userFid, setUserFid] = useState<number | undefined>();
   const [user, setUser] = useState<Context.UserContext | undefined>();
   const { isVerified, setIsVerified } = useVerification(userFid);
