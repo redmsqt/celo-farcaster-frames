@@ -23,8 +23,7 @@ export async function POST(req: NextRequest) {
       const selfBackendVerifier = new SelfBackendVerifier(
         "proof-of-ship-scope",
         `${baseUrl}/api/verify`,
-        "hex",
-        true
+        "hex"
       );
 
       // Verify the proof
