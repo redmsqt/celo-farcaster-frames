@@ -14,9 +14,9 @@ export async function POST(req: NextRequest) {
       }
 
       const userId = await getUserIdentifier(publicSignals);
-      // Convert hex to string by removing '0x' prefix and parsing as integer
+      // Convert hex to string using BigInt for accurate conversion
       const formattedUserId = userId.startsWith("0x")
-        ? parseInt(userId.slice(2), 16).toString()
+        ? BigInt(userId).toString()
         : userId;
 
       // Get the current URL from the request
