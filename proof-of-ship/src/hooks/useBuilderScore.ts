@@ -1,11 +1,13 @@
 import { Context } from "@farcaster/frame-sdk";
 import { useState, useCallback } from "react";
+import { useAccount } from "wagmi";
 
 export const useBuilderScore = () => {
   const [builderScore, setBuilderScore] = useState<number | null>(null);
   const [rank, setRank] = useState<number | null>(null);
   const [isLoadingScore, setIsLoadingScore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { address } = useAccount();
 
   const fetchBuilderScore = useCallback(async (user: Context.UserContext) => {
     if (!user) {
@@ -14,10 +16,11 @@ export const useBuilderScore = () => {
     setIsLoadingScore(true);
     setError(null);
     try {
+      console.log("address", address);
       const response = await fetch(
         `/api/builder-score/${user.fid}?profilePicture=${
           user.pfpUrl || ""
-        }&name=${user.displayName || ""}`,
+        }&name=${user.displayName || ""}&address=${address || ""}`,
         {
           method: "GET",
         }

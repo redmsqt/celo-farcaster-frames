@@ -15,6 +15,7 @@ export async function GET(
   const { searchParams } = new URL(request.url);
   const profilePicture = searchParams.get("profilePicture");
   const name = searchParams.get("name");
+  const address = searchParams.get("address");
 
   if (!fid) {
     return NextResponse.json(
@@ -54,6 +55,8 @@ export async function GET(
           talentScore: score,
           profilePicture: profilePicture || null,
           name: name || null,
+          wallet: address || null,
+          totalScore: score,
         },
       });
     }

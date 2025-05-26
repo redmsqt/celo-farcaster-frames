@@ -37,12 +37,12 @@ async function storeWeeklyTopBuilders() {
     // Get top 40 builders by talent score
     const topBuilders = await prisma.builderProfile.findMany({
       orderBy: {
-        talentScore: "desc",
+        totalScore: "desc",
       },
       take: 40,
       select: {
+        totalScore: true,
         wallet: true,
-        talentScore: true,
       },
       where: {
         talentScore: {
