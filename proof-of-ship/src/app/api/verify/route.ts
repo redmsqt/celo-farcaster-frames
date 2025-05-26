@@ -14,9 +14,6 @@ export async function POST(req: NextRequest) {
       }
 
       const userId = await getUserIdentifier(publicSignals);
-      console.log("userId", userId);
-      const decimalValue = parseInt(userId, 16);
-      console.log("decimalValue", decimalValue);
       // Get the current URL from the request
       const url = new URL(req.url);
       const baseUrl = `${url.protocol}//${url.host}`;
@@ -32,13 +29,15 @@ export async function POST(req: NextRequest) {
       // Verify the proof
       const result = await selfBackendVerifier.verify(proof, publicSignals);
       console.log("result", result);
+      const userIdDecimal = parseInt(result.userId, 16);
+      console.log("decimalValue", userIdDecimal);
 
       if (result.isValid) {
         // console.log("userId", formattedUserId);
 
         try {
           const builderScoreResponse = await fetch(
-            `${baseUrl}/api/builder-score/${decimalValue}`,
+            `${baseUrl}/api/builder-score/${userIdDecimal}`,
             {
               method: "PUT",
             }
