@@ -23,7 +23,7 @@ export default function Leaderboard({
         const data = await response.json();
         // Sort builders by talent score in descending order
         const sortedBuilders = data.sort(
-          (a: BuilderScore, b: BuilderScore) => b.talentScore - a.talentScore
+          (a: BuilderScore, b: BuilderScore) => b.totalScore - a.totalScore
         );
         setBuilders(sortedBuilders);
       } catch (err) {
