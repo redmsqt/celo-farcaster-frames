@@ -85,25 +85,6 @@ export default function Dashboard() {
     if (deeplink) {
       try {
         window.location.href = deeplink;
-        // const handleReturn = async () => {
-        //   if (userFid) {
-        //     try {
-        //       const response = await fetch(`/api/builder-score/${userFid}`, {
-        //         method: "PUT",
-        //       });
-
-        //       if (response.ok) {
-        //         await refetchBuilderScore(user!);
-        //         setIsVerified(true);
-        //       }
-        //     } catch (error) {
-        //       console.error("Error updating score:", error);
-        //     }
-        //   }
-        // };
-
-        // // Listen for the return from the Self app
-        // window.addEventListener("focus", handleReturn, { once: true });
       } catch (error) {
         console.error("Error handling deeplink:", error);
       }
