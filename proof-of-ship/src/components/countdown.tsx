@@ -13,19 +13,19 @@ export default function Countdown() {
   useEffect(() => {
     const calculateTimeLeft = () => {
       const now = dayjs.utc();
-      let nextSunday = dayjs
+      let nextFriday = dayjs
         .utc()
-        .day(7)
-        .hour(12)
+        .day(5)
+        .hour(18)
         .minute(0)
         .second(0)
         .millisecond(0);
 
-      if (now.isAfter(nextSunday)) {
-        nextSunday = nextSunday.add(1, "week");
+      if (now.isAfter(nextFriday)) {
+        nextFriday = nextFriday.add(1, "week");
       }
 
-      const diff = nextSunday.diff(now);
+      const diff = nextFriday.diff(now);
       const duration = dayjs.duration(diff);
 
       const days = Math.floor(duration.asDays());
