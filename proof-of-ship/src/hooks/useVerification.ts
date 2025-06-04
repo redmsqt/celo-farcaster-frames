@@ -1,19 +1,16 @@
 import { useState, useEffect } from "react";
-import { useAccount } from "wagmi";
 
-export const useVerification = () => {
+export const useVerification = (userFid?: number) => {
   const [isVerified, setIsVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { address } = useAccount();
-
   useEffect(() => {
+    if (!userFid) {
+      setIsLoading(false);
+      return;
+    }
     const fetchIsVerified = async () => {
-      if (!address) {
-        setIsLoading(false);
-        return;
-      }
       try {
-        const response = await fetch(`/api/verification/${address}`);
+        const response = await fetch(`/api/verification/${userFid}`);
         const data = await response.json();
         setIsVerified(data.isVerified);
       } catch {
@@ -24,6 +21,6 @@ export const useVerification = () => {
     };
 
     fetchIsVerified();
-  }, [address]);
+  }, [userFid]);
   return { isVerified, setIsVerified, isLoading };
 };

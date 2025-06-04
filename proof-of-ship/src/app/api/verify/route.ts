@@ -1,4 +1,4 @@
-import { getUserIdentifier, SelfBackendVerifier } from "@selfxyz/core";
+import { SelfBackendVerifier } from "@selfxyz/core";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -12,10 +12,6 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
-
-      const userId = await getUserIdentifier(publicSignals);
-
-      // Get the current URL from the request
       const url = new URL(req.url);
       const baseUrl = `${url.protocol}//${url.host}`;
       console.log("baseUrl", baseUrl);
@@ -23,16 +19,34 @@ export async function POST(req: NextRequest) {
       const selfBackendVerifier = new SelfBackendVerifier(
         "proof-of-ship-scope",
         `${baseUrl}/api/verify`,
-        "hex",
-        true
+        "hex"
       );
 
       // Verify the proof
       const result = await selfBackendVerifier.verify(proof, publicSignals);
       console.log("result", result);
+      const userIdDecimal = parseInt(result.userId, 16);
+      console.log("decimalValue", userIdDecimal);
 
       if (result.isValid) {
-        console.log("userId", userId);
+        try {
+          const builderScoreResponse = await fetch(
+            `${baseUrl}/api/builder-score/${userIdDecimal}`,
+            {
+              method: "PUT",
+            }
+          );
+          console.log("builderScoreResponse", builderScoreResponse);
+          if (!builderScoreResponse.ok) {
+            console.error(
+              "Failed to update builder score:",
+              await builderScoreResponse.text()
+            );
+          }
+        } catch (error) {
+          console.error("Error updating builder score:", error);
+        }
+
         return NextResponse.json(
           {
             status: "success",

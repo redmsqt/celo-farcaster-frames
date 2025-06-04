@@ -10,9 +10,9 @@ export async function GET() {
         },
       },
       orderBy: {
-        talentScore: "desc",
+        totalScore: "desc",
       },
-      take: 10,
+      take: 40,
     });
 
     return NextResponse.json(builders);

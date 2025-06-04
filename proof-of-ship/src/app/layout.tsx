@@ -5,8 +5,8 @@ import "~/app/globals.css";
 import { Providers } from "~/app/providers";
 
 export const metadata: Metadata = {
-  title: "Proof of Ship",
-  description: "Proof of Ship Frame",
+  title: "Weekly Builder Rewards",
+  description: "Weekly Builder Rewards Frame",
 };
 
 export default async function RootLayout({

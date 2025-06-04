@@ -14,10 +14,10 @@ const frame = {
   loadingImageUrl: `${appUrl}/loading.gif`,
   // This is the button displayed when sharing the link.
   button: {
-    title: "Proof of Ship",
+    title: "Weekly Builder Rewards",
     action: {
       type: "launch_frame",
-      name: "Proof of Ship",
+      name: "Weekly Builder Rewards",
       url: appUrl,
       splashImageUrl: `${appUrl}/splash.png`,
       splashBackgroundColor: "#f7f7f7",
@@ -29,10 +29,10 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Proof of Ship",
+    title: "Weekly Builder Rewards",
     openGraph: {
-      title: "Proof of Ship",
-      description: "Proof of Ship",
+      title: "Weekly Builder Rewards",
+      description: "Weekly Builder Rewards",
     },
     other: {
       "fc:frame": JSON.stringify(frame),

@@ -15,7 +15,7 @@ export async function GET() {
     },
     frame: {
       version: "1",
-      name: "Proof of ship",
+      name: "Shipper",
       iconUrl: `${appUrl}/splash.png`,
       homeUrl: appUrl,
       imageUrl: `${appUrl}/splash.png`,

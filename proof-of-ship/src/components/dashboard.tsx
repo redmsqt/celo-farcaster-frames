@@ -2,18 +2,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import sdk, { type Context } from "@farcaster/frame-sdk";
 import { createStore } from "mipd";
 import { useAccount } from "wagmi";
-import SelfQRcodeWrapper, { SelfAppBuilder } from "@selfxyz/qrcode";
+import { getUniversalLink, SelfAppBuilder } from "@selfxyz/core";
+import { CheckCircle2 } from "lucide-react";
 import Leaderboard from "./leaderboard";
 import UserScore from "./user-score";
 import Countdown from "./countdown";
 import { useVerification } from "~/hooks/useVerification";
 import { useBuilderScore } from "~/hooks/useBuilderScore";
 import { Londrina_Solid } from "next/font/google";
-
+import RewardTiers from "./reward-tiers";
+import { Button } from "./ui/button";
+import Information from "./information";
 const londrina = Londrina_Solid({
   weight: "400",
   subsets: ["latin"],
@@ -23,24 +25,27 @@ const londrina = Londrina_Solid({
 export default function Dashboard() {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
   const [context, setContext] = useState<Context.FrameContext>();
-  const {
-    isVerified,
-    setIsVerified,
-    isLoading: isVerificationLoading,
-  } = useVerification();
+
   const { address } = useAccount();
+  const [userFid, setUserFid] = useState<number | undefined>();
+  const { isVerified } = useVerification(userFid);
   const {
     builderScore,
     rank,
     mutate: refetchBuilderScore,
     isLoadingScore,
-  } = useBuilderScore(isVerified);
+  } = useBuilderScore();
 
   useEffect(() => {
     const load = async () => {
       const context = await sdk.context;
+      const user = context.user;
+      setUserFid(user?.fid);
       setContext(context);
       sdk.actions.ready({});
+      if (user?.fid) {
+        refetchBuilderScore(user);
+      }
 
       // Set up a MIPD Store, and request Providers.
       const store = createStore();
@@ -59,23 +64,32 @@ export default function Dashboard() {
     }
   }, [isSDKLoaded]);
 
-  useEffect(() => {
-    if (isVerified) {
-      refetchBuilderScore();
-    }
-  }, [isVerified, refetchBuilderScore]);
+  const userId = userFid ? `0x${userFid.toString(16)}` : undefined;
+  console.log("userId", userId);
 
   const selfApp = address
     ? new SelfAppBuilder({
-        appName: "Proof of ship",
+        appName: "Shipper",
         scope: "proof-of-ship-scope",
         endpoint: `${window.location.origin}/api/verify`,
-        userId: address,
+        userId,
         userIdType: "hex",
         endpointType: "https",
+        logoBase64: "https://your-logo-url.png",
       }).build()
     : null;
-  console.log("selfApp", selfApp);
+
+  const deeplink = selfApp ? getUniversalLink(selfApp) : null;
+
+  const handleMobileDeeplink = async () => {
+    if (deeplink) {
+      try {
+        window.location.href = deeplink;
+      } catch (error) {
+        console.error("Error handling deeplink:", error);
+      }
+    }
+  };
 
   const renderContent = () => {
     if (!isSDKLoaded) {
@@ -89,59 +103,15 @@ export default function Dashboard() {
       );
     }
 
-    if (!address) {
-      return (
-        <div className="flex items-center justify-center h-[600px]">
-          <ConnectButton />
-        </div>
-      );
-    }
-
-    if (isVerificationLoading) {
-      return (
-        <div className="flex flex-col items-center justify-center h-[600px]">
-          <span className="loader mb-4" />
-          <div className="text-white text-lg font-semibold animate-pulse">
-            Checking verification status...
-          </div>
-        </div>
-      );
-    }
-
     return (
       <div className="w-full max-w-md mx-auto py-8 px-6 bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 relative min-h-[600px]">
         <h1
-          className={`text-3xl font-bold text-center text-white ${londrina.className} mb-8`}
+          className={`text-2xl font-bold text-center text-white ${londrina.className} mb-8`}
         >
-          PROOF OF SHIP
+          SHIPPER
         </h1>
         <div className="flex flex-col items-center">
-          {!isVerified && !isVerificationLoading && selfApp && (
-            <div className="flex flex-col items-center">
-              <h2 className="text-2xl font-bold mb-2 text-white drop-shadow">
-                Verify Your Identity
-              </h2>
-              <p className="mb-4 text-gray-200 text-center max-w-xs">
-                Scan the QR code with your Self app to verify your identity
-              </p>
-              <div className="p-3 rounded-2xl bg-white/20 border border-white/30 shadow-lg animate-pulse-slow">
-                <SelfQRcodeWrapper
-                  selfApp={selfApp}
-                  onSuccess={async () => {
-                    await fetch(`/api/builder-score/${address}`, {
-                      method: "POST",
-                    });
-                    setIsVerified(true);
-                    if (address) {
-                      await refetchBuilderScore();
-                    }
-                  }}
-                  size={300}
-                />
-              </div>
-            </div>
-          )}
-          {isVerified && (
+          {
             <>
               {builderScore && builderScore < 40 ? (
                 <UserScore
@@ -156,15 +126,36 @@ export default function Dashboard() {
                   isLoading={isLoadingScore}
                 />
               )}
-              <div className="flex justify-end items-center mb-4">
+              {deeplink && (
+                <div className="w-full flex items-center justify-between bg-white/5 p-4 rounded-lg mb-4">
+                  <div className="flex-col text-white text-left text-base leading-tight">
+                    Verify with self.xyz
+                    <br />& earn +25 points
+                  </div>
+                  <div className="flex items-center justify-center">
+                    {isVerified ? (
+                      <CheckCircle2 className="w-6 h-6 text-green-500" />
+                    ) : (
+                      <Button
+                        onClick={handleMobileDeeplink}
+                        className="bg-purple-400 hover:bg-purple-500 text-xs px-1 py-1 rounded-sm text-white shadow-md transition-colors duration-200"
+                      >
+                        Verify Now
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+              <div className="flex flex-row items-center justify-between gap-4 mb-4">
+                <RewardTiers />
                 <Countdown />
+                <Information />
               </div>
-              <Leaderboard
-                isVerified={isVerified}
-                builderScore={builderScore || 0}
-              />
+              {!isLoadingScore && (
+                <Leaderboard builderScore={builderScore || 0} />
+              )}
             </>
-          )}
+          }
         </div>
       </div>
     );

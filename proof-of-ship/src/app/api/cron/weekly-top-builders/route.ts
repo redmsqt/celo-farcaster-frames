@@ -3,10 +3,11 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { ethers } from "ethers";
 import BuilderTokenArtifact from "../../../../contracts/SHIPRToken.json";
+import { generateDivviDataSuffix, submitDivviReferral } from "~/lib/divvi";
 
 dayjs.extend(utc);
 
-const BUILDER_TOKEN_ADDRESS = "0x8fE0F1B750eF84024FAb4E6FFd8bB03488f0FADF";
+const BUILDER_TOKEN_ADDRESS = "0x76c88eb3F5f8C45099a4d4587133a6688C5A257B";
 
 export async function GET(request: Request) {
   console.log("Weekly top builders cron job started");
@@ -33,15 +34,15 @@ async function storeWeeklyTopBuilders() {
     const now = dayjs.utc();
     const weekStart = now.startOf("week").toDate();
 
-    // Get top 10 builders by talent score
+    // Get top 40 builders by talent score
     const topBuilders = await prisma.builderProfile.findMany({
       orderBy: {
-        talentScore: "desc",
+        totalScore: "desc",
       },
-      take: 10,
+      take: 40,
       select: {
+        totalScore: true,
         wallet: true,
-        talentScore: true,
       },
       where: {
         talentScore: {
@@ -53,11 +54,11 @@ async function storeWeeklyTopBuilders() {
     const storedBuilders = await prisma.weeklyTopBuilder.createMany({
       data: topBuilders.map(
         (
-          builder: { wallet: string; talentScore: number | null },
+          builder: { wallet: string | null; totalScore: number | null },
           index: number
         ) => ({
-          wallet: builder.wallet,
-          talentScore: builder.talentScore || 0,
+          wallet: builder.wallet || "",
+          talentScore: builder.totalScore || 0,
           rank: index + 1,
           weekStart,
         })
@@ -74,13 +75,40 @@ async function storeWeeklyTopBuilders() {
         wallet
       );
 
-      const builderAddresses = topBuilders.map((builder) => builder.wallet);
-      const tx = await builderToken.distributeTopBuilderRewards(
-        builderAddresses
+      const builderRewards = topBuilders.map((builder, index) => ({
+        builder: builder.wallet,
+        amount:
+          index < 5
+            ? ethers.parseEther("300") // First 5 builders get 300 tokens
+            : index < 15
+            ? ethers.parseEther("200") // Next 10 builders get 200 tokens
+            : index < 40
+            ? ethers.parseEther("100") // Next 25 builders get 100 tokens
+            : ethers.parseEther("0"),
+      }));
+
+      // Generate Divvi data suffix for referral tracking with default providers
+      const dataSuffix = generateDivviDataSuffix();
+
+      // Get the contract's distributeTopBuilderRewards function data
+      const distributeData = builderToken.interface.encodeFunctionData(
+        "distributeTopBuilderRewards",
+        [builderRewards]
       );
+
+      const txData = distributeData + dataSuffix;
+
+      // Send transaction with Divvi data
+      const tx = await wallet.sendTransaction({
+        to: BUILDER_TOKEN_ADDRESS,
+        data: txData,
+      });
+
       await tx.wait();
 
-      console.log("Tokens distributed to top builders:", tx.hash);
+      // Submit referral to Divvi
+      const chainId = await provider.getNetwork().then((n) => n.chainId);
+      await submitDivviReferral(tx.hash as `0x${string}`, Number(chainId));
     }
 
     return { success: true, count: storedBuilders.count };

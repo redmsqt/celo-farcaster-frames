@@ -1,6 +1,6 @@
 {
   "crons": [{
     "path": "/api/cron/weekly-top-builders",
-    "schedule": "0 11 * * 0"
+    "schedule": "0 18 * * 5"
   }]
 }

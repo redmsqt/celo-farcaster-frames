@@ -1,28 +1,30 @@
+import { Context } from "@farcaster/frame-sdk";
 import { useState, useCallback } from "react";
 import { useAccount } from "wagmi";
 
-export const useBuilderScore = (isVerified: boolean) => {
+export const useBuilderScore = () => {
   const [builderScore, setBuilderScore] = useState<number | null>(null);
   const [rank, setRank] = useState<number | null>(null);
   const [isLoadingScore, setIsLoadingScore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { address } = useAccount();
 
-  const fetchBuilderScore = useCallback(async () => {
-    console.log("fetchBuilderScore called with:", { address, isVerified });
-    if (!address || !isVerified) {
-      console.log("fetchBuilderScore early return - missing:", {
-        hasAddress: !!address,
-        isVerified,
-      });
+  const fetchBuilderScore = useCallback(async (user: Context.UserContext) => {
+    if (!user) {
       return;
     }
     setIsLoadingScore(true);
     setError(null);
-    console.log("fetchBuilderScore proceeding with fetch");
     try {
-      const response = await fetch(`/api/builder-score/${address}`);
-      console.log("response fetchBuilderScore", response);
+      console.log("address", address);
+      const response = await fetch(
+        `/api/builder-score/${user.fid}?profilePicture=${
+          user.pfpUrl || ""
+        }&name=${user.displayName || ""}&address=${address || ""}`,
+        {
+          method: "GET",
+        }
+      );
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to fetch builder score");
@@ -38,7 +40,7 @@ export const useBuilderScore = (isVerified: boolean) => {
     } finally {
       setIsLoadingScore(false);
     }
-  }, [address, isVerified]);
+  }, []);
 
   return {
     builderScore,
