@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState} from 'react';
 import { Header } from './components/Header';
 import { ProjectGrid } from './components/ProjectGrid';
 import { Cart } from './components/Cart';
